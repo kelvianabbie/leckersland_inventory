@@ -1,0 +1,243 @@
+const express = require('express');
+const router = express.Router();
+const { sequelize } = require('../models/db');
+const PurchaseOrder = require('../models/PurchaseOrder');
+const Inventory = require('../models/Inventory');
+const Product = require('../models/Product');
+
+//get all purchase orders
+router.get('/', async (req, res) => {
+  try {
+    const { status, limit = 20, page = 1 } = req.query;
+    const parsedLimit = parseInt(limit);
+    const parsedPage = parseInt(page);
+    const offset = (parsedPage - 1) * parsedLimit;
+    
+    let whereClause = '';
+    let replacements = {
+      limit: parsedLimit,
+      offset
+    };
+    
+    if (status) {
+      whereClause += ' WHERE po.status = :status';
+      replacements.status = status;
+    }
+
+    const orders = await sequelize.query(`
+      SELECT 
+        po.id,
+        po.status,
+        po.ordered_date,
+        po.received_date,
+        po.created_at,
+        poi.product_id,
+        poi.quantity,
+        poi.buy_price,
+        p.name as product_name,
+        p.sku
+      FROM (
+        SELECT *
+        FROM purchase_orders
+        ORDER BY created_at DESC
+        LIMIT :limit
+        OFFSET :offset
+      ) po
+      LEFT JOIN purchase_order_items poi ON poi.purchase_order_id = po.id
+      LEFT JOIN products p ON poi.product_id = p.id
+      ORDER BY po.created_at DESC
+      ${whereClause}
+    `, {
+      replacements,
+      type: sequelize.QueryTypes.SELECT
+    });
+
+    //transform the flat result into nested objects
+    const orderMap = {};
+
+    for (const row of orders) {
+      if (!orderMap[row.id]) {
+        orderMap[row.id] = {
+          id: row.id,
+          status: row.status,
+          ordered_date: row.ordered_date,
+          received_date: row.received_date,
+          created_at: row.created_at,
+          items: []
+        };
+      }
+
+      if (row.product_id) {
+        orderMap[row.id].items.push({
+          product_id: row.product_id,
+          quantity: row.quantity,
+          buy_price: parseFloat(row.buy_price),
+          product: {
+            id: row.product_id,
+            name: row.product_name,
+            sku: row.sku
+          }
+        });
+      }
+    }
+
+    const formattedOrders = Object.values(orderMap).sort(
+      (a, b) => new Date(b.created_at) - new Date(a.created_at)
+    );
+
+    res.json({
+      success: true,
+      data: {
+        orders: formattedOrders,
+        page: parsedPage,
+        limit: parsedLimit
+      }
+    });
+  } catch (error) {
+    console.error('Orders GET error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+//create new purchase order
+router.post('/', async (req, res) => {
+  const t = await sequelize.transaction();
+
+  try {
+    const { items } = req.body;
+
+    if (!items || items.length === 0) {
+      throw new Error('Order must contain at least one item');
+    }
+
+    const order = await PurchaseOrder.create({}, { transaction: t });
+
+    for (const item of items) {
+      const product = await Product.findByPk(item.product_id, { transaction: t });
+
+      if (!product) {
+        throw new Error('Product not found');
+      }
+
+      await require('../models/PurchaseOrderItem').create({
+        purchaseOrderId: order.id,
+        productId: item.product_id,
+        quantity: item.quantity,
+        buyPrice: product.buy_price
+      }, { transaction: t });
+    }
+
+    await t.commit();
+
+    res.json({
+      success: true,
+      data: {
+        order: { id: order.id }
+      }
+    });
+
+  } catch (error) {
+    await t.rollback();
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+//update order status
+router.put('/:id/status', async (req, res) => {
+  const t = await sequelize.transaction();
+
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    const order = await PurchaseOrder.findByPk(id, { transaction: t });
+
+    if (!order) {
+      await t.rollback();
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    order.status = status;
+
+    //set ordered date
+    if (status === 'ordered' && !order.orderedDate) {
+      order.orderedDate = new Date();
+    }
+
+    //set received date AND update inventory
+    if (status === 'received' && !order.receivedDate) {
+      order.receivedDate = new Date();
+      
+      const PurchaseOrderItem = require('../models/PurchaseOrderItem');
+
+      const items = await PurchaseOrderItem.findAll({
+        where: { purchaseOrderId: order.id },
+        transaction: t
+      });
+
+      for (const item of items) {
+        let inventory = await Inventory.findOne({
+          where: { product_id: item.productId },
+          transaction: t
+        });
+
+        if (!inventory) {
+          await Inventory.create({
+            product_id: item.productId,
+            quantity: item.quantity
+          }, { transaction: t });
+        } else {
+          inventory.quantity += item.quantity;
+          await inventory.save({ transaction: t });
+        }
+      }
+    }
+
+    await order.save({ transaction: t });
+
+    await t.commit();
+
+    res.json({
+      success: true
+    });
+
+  } catch (error) {
+    await t.rollback();
+    console.error(error);
+    res.status(500).json({
+      error: error.message
+    });
+  }
+});
+
+//delete order (cancel)
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const order = await PurchaseOrder.findByPk(id);
+
+    if (!order) {
+      return res.status(404).json({
+        error: 'Order not found'
+      });
+    }
+
+    const PurchaseOrderItem = require('../models/PurchaseOrderItem');
+
+    await PurchaseOrderItem.destroy({
+      where: { purchaseOrderId: id }
+    });
+
+    await order.destroy();
+
+    res.json({
+      success: true
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      error: error.message
+    });
+  }
+});
+
+module.exports = router;
