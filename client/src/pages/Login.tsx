@@ -12,7 +12,9 @@ export default function Login() {
     e.preventDefault();
 
     try {
-      const res = await fetch('http://localhost:3001/api/auth/login', {
+      const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://leckersland-inventory.onrender.com/api';
+
+      const res = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
