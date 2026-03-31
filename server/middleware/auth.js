@@ -1,13 +1,22 @@
 const jwt = require('jsonwebtoken');
 
 module.exports = function (req, res, next) {
-  const authHeader = req.headers.authorization;
+  let token;
 
-  if (!authHeader) {
-    return res.status(401).json({ error: 'No token provided' });
+  // 1. Check Authorization header
+  const authHeader = req.headers.authorization;
+  if (authHeader) {
+    token = authHeader.split(' ')[1];
   }
 
-  const token = authHeader.split(' ')[1];
+  // 2. Fallback to query param
+  if (!token && req.query.token) {
+    token = req.query.token;
+  }
+
+  if (!token) {
+    return res.status(401).json({ error: 'No token provided' });
+  }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);

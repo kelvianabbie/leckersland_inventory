@@ -23,6 +23,7 @@ export default function Sales() {
   const [page, setPage] = useState(1);
   const limit = 20;
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://leckersland-inventory.onrender.com/api';
+  const token = localStorage.getItem('token');
 
   // Filter state
   const [statusFilter, setStatusFilter] = useState<SaleStatus>('all');
@@ -596,7 +597,7 @@ export default function Sales() {
                             <button
                               onClick={() => {
                                 window.open(
-                                  `${API_BASE_URL}/sales/${sale.id}`,
+                                  `${API_BASE_URL}/sales/${sale.id}?token=${token}`,
                                   '_blank'
                                 );
                               }}
