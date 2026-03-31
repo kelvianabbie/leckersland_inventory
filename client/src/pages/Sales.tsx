@@ -597,7 +597,7 @@ export default function Sales() {
                             <button
                               onClick={() => {
                                 window.open(
-                                  `${API_BASE_URL}/sales/${sale.id}?token=${token}`,
+                                  `${API_BASE_URL}/invoice/${sale.id}?token=${token}`,
                                   '_blank'
                                 );
                               }}
