@@ -36,12 +36,10 @@ export default function Dashboard() {
       setLoading(true);
       const [inventoryRes, ordersRes, salesRes] = await Promise.all([ //recsRes 2nd
         inventoryAPI.getAll(),
-        //analyticsAPI.getReorderRecommendations(),
         ordersAPI.getAll({ limit: 5 }),
         salesAPI.getAll({ limit: 5 })
       ]);
       setInventory(inventoryRes.data?.inventory || []);
-      //setRecommendations(recsRes.data?.recommendations || []);
       setRecentOrders(ordersRes.data?.orders || []);
       setRecentSales(salesRes.data?.sales || []);
       setError(null);

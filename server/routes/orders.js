@@ -39,6 +39,8 @@ router.get('/', async (req, res) => {
       FROM (
         SELECT *
         FROM purchase_orders
+        WHERE 1=1
+          ${status ? 'AND status = :status' : ''}
         ORDER BY created_at DESC
         LIMIT :limit
         OFFSET :offset
@@ -46,7 +48,6 @@ router.get('/', async (req, res) => {
       LEFT JOIN purchase_order_items poi ON poi.purchase_order_id = po.id
       LEFT JOIN products p ON poi.product_id = p.id
       ORDER BY po.created_at DESC
-      ${whereClause}
     `, {
       replacements,
       type: sequelize.QueryTypes.SELECT

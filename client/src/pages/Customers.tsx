@@ -96,26 +96,6 @@ export default function Customers() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  /*const handleDeactivate = async (id: number) => {
-    try {
-      await customersAPI.deactivate(id);
-      setSuccess('Customer deactivated');
-      await loadCustomers();
-    } catch {
-      setError('Failed to deactivate customer');
-    }
-  };
-
-  const handleReactivate = async (id: number) => {
-    try {
-      await customersAPI.reactivate(id);
-      setSuccess('Customer reactivated');
-      await loadCustomers();
-    } catch {
-      setError('Failed to reactivate customer');
-    }
-  };*/
-
   const handleConfirm = async () => {
     if (!confirmAction) return;
 

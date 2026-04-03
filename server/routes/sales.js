@@ -141,6 +141,10 @@ router.get('/', async (req, res) => {
       FROM (
         SELECT *
         FROM sales
+        WHERE 1=1
+          ${status ? 'AND status = :status' : ''}
+          ${customer_id ? 'AND customer_id = :customer_id' : ''}
+          ${season ? 'AND season = :season' : ''}
         ORDER BY sale_date DESC
         LIMIT :limit
         OFFSET :offset
@@ -152,7 +156,10 @@ router.get('/', async (req, res) => {
     `, {
       replacements: {
         limit: parsedLimit,
-        offset
+        offset,
+        ...(status && { status }),
+        ...(customer_id && { customer_id }),
+        ...(season && { season })
       },
       type: QueryTypes.SELECT
     });
