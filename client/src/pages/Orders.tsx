@@ -179,7 +179,7 @@ export default function Orders() {
       {success && <Alert type="success">{success}</Alert>}
 
       {/*total order based on status*/}
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-lg p-4 shadow">
           <p className="text-sm text-gray-600">Total Orders</p>
           <p className="text-2xl font-bold">{stats.total}</p>
@@ -326,7 +326,7 @@ export default function Orders() {
           <h2 className="text-lg font-semibold">Order History</h2>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[700px]">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date Created</th>

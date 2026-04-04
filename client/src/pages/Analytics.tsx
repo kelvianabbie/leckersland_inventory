@@ -155,8 +155,10 @@ export default function Analytics() {
         {/* Top Sellers */}
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-lg font-semibold mb-4">Top 10 Sellers</h2>
-          <div style={{ height: '400px' }}>
-            <Bar data={topSellersChart} options={chartOptions} />
+          <div className="w-full overflow-x-auto">
+            <div style={{ minWidth: '400px', height: '400px' }}>
+              <Bar data={topSellersChart} options={chartOptions} />
+            </div>
           </div>
         </div>
 
@@ -188,8 +190,10 @@ export default function Analytics() {
         {/* Top Profit */}
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-lg font-semibold mb-4">Top Profit Products</h2>
-          <div style={{ height: '400px' }}>
-            <Bar data={profitChart} />
+          <div className="w-full overflow-x-auto">
+            <div style={{ minWidth: '400px', height: '400px' }}>
+              <Bar data={profitChart} />
+            </div>
           </div>
         </div>
 
@@ -199,7 +203,7 @@ export default function Analytics() {
             <h2 className="text-lg font-semibold">Best Margins</h2>
           </div>
 
-          <table className="w-full">
+          <table className="w-full min-w-[700px]">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
@@ -276,7 +280,7 @@ export default function Analytics() {
         )}
 
         {/* TABLE */}
-        <table className="w-full">
+        <table className="w-full min-w-[700px]">
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
@@ -317,7 +321,7 @@ export default function Analytics() {
           </p>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[700px]">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>

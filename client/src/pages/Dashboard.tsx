@@ -66,8 +66,6 @@ export default function Dashboard() {
     await loadData(); //refresh data
   };
 
-  
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending':

@@ -1,4 +1,5 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
+import { useState } from 'react';
 
 interface NavItem {
   name: string;
@@ -17,20 +18,36 @@ const navigation: NavItem[] = [
 
 export default function Layout() {
   const location = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/*sidebar*/}
-      <div className="fixed inset-y-0 left-0 w-64 bg-white shadow-lg">
+
+      {/* MOBILE OVERLAY */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-40 z-40 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* SIDEBAR */}
+      <div className={`
+        fixed inset-y-0 left-0 w-64 bg-white shadow-lg z-50 transform transition-transform duration-300
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        md:translate-x-0
+      `}>
         <div className="p-6">
           <h1 className="text-2xl font-bold text-primary">Leckersland Inventory</h1>
           <p className="text-sm text-gray-500 mt-1">Wholesale Management</p>
         </div>
+
         <nav className="mt-6 px-4">
           {navigation.map((item) => (
             <Link
               key={item.name}
               to={item.href}
+              onClick={() => setSidebarOpen(false)} // close on mobile click
               className={`flex items-center gap-3 px-4 py-3 rounded-lg mb-2 transition-colors ${
                 location.pathname === item.href
                   ? 'bg-primary text-white'
@@ -44,25 +61,41 @@ export default function Layout() {
         </nav>
       </div>
 
-      {/*main*/}
-      <div className="ml-64">
-        <header className="bg-white shadow-sm">
-          <div className="px-8 py-4 flex justify-between items-center">
-            <h2 className="text-xl font-semibold text-gray-800">
-              {navigation.find(n => n.href === location.pathname)?.name || 'Dashboard'}
-            </h2>
-            <div className="text-sm text-gray-500">
-              {new Date().toLocaleDateString('en-US', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
+      {/* MAIN CONTENT */}
+      <div className="md:ml-64">
+
+        {/* HEADER */}
+        <header className="bg-white shadow-sm h-16 flex items-center">
+          <div className="w-full px-4 md:px-8 flex justify-between items-center">
+
+            {/* LEFT: HAMBURGER + TITLE */}
+            <div className="flex items-center gap-3">
+              <button
+                className="md:hidden text-2xl"
+                onClick={() => setSidebarOpen(true)}
+              >
+                ☰
+              </button>
+
+              <h2 className="text-lg md:text-xl font-semibold text-gray-800">
+                {navigation.find(n => n.href === location.pathname)?.name || 'Dashboard'}
+              </h2>
+            </div>
+
+            {/* DATE */}
+            <div className="text-xs md:text-sm text-gray-500 text-right">
+              {new Date().toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
               })}
             </div>
           </div>
         </header>
-        
-        <main className="p-8">
+
+        {/* PAGE CONTENT */}
+        <main className="p-4 md:p-8">
           <Outlet />
         </main>
       </div>

@@ -233,7 +233,7 @@ export default function Sales() {
             </select>
           </div>
           
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <select
               value={selectedProductId}
               onChange={e => setSelectedProductId(parseInt(e.target.value))}
@@ -332,7 +332,7 @@ export default function Sales() {
             <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
               Sales Status
             </h3>
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="bg-white rounded-lg p-4 shadow">
                 <p className="text-sm text-gray-600">Total Sales</p>
                 <p className="text-2xl font-bold text-gray-900">
@@ -364,7 +364,7 @@ export default function Sales() {
             <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
               Season Breakdown
             </h3>
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="bg-emerald-100 rounded-lg p-4 shadow">
                 <p className="text-sm text-emerald-700">Spring</p>
                 <p className="text-2xl font-bold text-emerald-600">
@@ -508,7 +508,7 @@ export default function Sales() {
             </div>
           )}
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full min-w-[700px]">
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date Created</th>
