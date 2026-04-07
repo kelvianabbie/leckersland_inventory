@@ -70,18 +70,18 @@ router.get('/:id', async (req, res) => {
       .font('Helvetica')
       .fontSize(10)
       .text(
-        '1234 Very Long Placeholder Business Address Lane, Placeholder District, Placeholder City, Placeholder Country, 123456',
+        '45953 Warm Springs Blvd, Fremont, CA 94539',
         leftX,
         currentY,
         { width: contentWidth }
       );
 
     currentY += doc.heightOfString(
-      '1234 Very Long Placeholder Business Address Lane, Placeholder District, Placeholder City, Placeholder Country, 123456',
+      '45953 Warm Springs Blvd, Fremont, CA 94539',
       { width: contentWidth }
     );
 
-    doc.text('Email: contact@leckersland.com', leftX, currentY, {
+    doc.text('Email: info@leckersland.com', leftX, currentY, {
       width: contentWidth
     });
 
