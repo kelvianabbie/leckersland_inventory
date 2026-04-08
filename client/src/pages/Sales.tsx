@@ -617,10 +617,10 @@ export default function Sales() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="grid grid-cols-3 gap-2 min-w-[320px] items-center text-xs">
+                      <div className="grid grid-cols-3 min-w-[340px] items-center text-xs">
 
                         {/* COLUMN 1 */}
-                        <div className="flex items-center h-8">
+                        <div className="flex items-center h-8 pr-2">
                           {sale.status === 'completed' && (
                             <span className="text-green-500 italic">Sale Completed</span>
                           )}
@@ -638,7 +638,7 @@ export default function Sales() {
                         </div>
 
                         {/* COLUMN 2 */}
-                        <div className="flex items-center h-8">
+                        <div className="flex items-center h-8 px-2">
                           {(sale.status === 'pending' || sale.status === 'completed') && (
                             <button
                               onClick={() => {
@@ -647,7 +647,7 @@ export default function Sales() {
                                   '_blank'
                                 );
                               }}
-                              className="px-3 py-1 bg-blue-600 text-white rounded"
+                              className="px-3 py-1 bg-blue-600 text-white rounded whitespace-nowrap"
                             >
                               Download Invoice
                             </button>
@@ -655,11 +655,11 @@ export default function Sales() {
                         </div>
 
                         {/* COLUMN 3 */}
-                        <div className="flex items-center h-8">
+                        <div className="flex items-center h-8 pl-2">
                           {sale.status === 'pending' && (
                             <button
                               onClick={() => setCancelSaleId(sale.id)}
-                              className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+                              className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 whitespace-nowrap"
                             >
                               Cancel
                             </button>
