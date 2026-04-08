@@ -24,6 +24,7 @@ export default function Sales() {
   const limit = 20;
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://leckersland-inventory.onrender.com/api';
   const token = localStorage.getItem('token');
+  const [invoiceSaleId, setInvoiceSaleId] = useState<number | ''>('');
 
   // Filter state
   const [statusFilter, setStatusFilter] = useState<SaleStatus>('all');
@@ -157,6 +158,18 @@ export default function Sales() {
     } catch (err) {
       setError('Failed to update sale status');
     }
+  };
+  
+  const handleDownloadInvoice = () => {
+    if (!invoiceSaleId) {
+      setError('Please enter a Sale ID');
+      return;
+    }
+
+    window.open(
+      `${API_BASE_URL}/invoice/${invoiceSaleId}?token=${token}`,
+      '_blank'
+    );
   };
 
   const getFilteredSales = (): Sale[] => {
@@ -500,6 +513,33 @@ export default function Sales() {
           </div>
         </div>
 
+        {/* Download Invoice by Sale ID */}
+        <div className="bg-gray-50 border rounded-lg p-4">
+          <div className="flex flex-col md:flex-row md:items-center gap-3">
+            
+            <span className="text-sm font-medium text-gray-700">
+              Download Invoice for Sale ID:
+            </span>
+
+            <input
+              type="number"
+              value={invoiceSaleId}
+              onChange={(e) =>
+                setInvoiceSaleId(e.target.value ? parseInt(e.target.value) : '')
+              }
+              placeholder="Enter Sale ID"
+              className="px-3 py-2 border rounded-lg w-full md:w-48"
+            />
+
+            <button
+              onClick={handleDownloadInvoice}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              Download Invoice
+            </button>
+          </div>
+        </div>
+
         {/* Sales Table */}
         <div className="relative">
           {loading && (
@@ -511,6 +551,7 @@ export default function Sales() {
             <table className="w-full min-w-[700px]">
               <thead className="bg-gray-50">
                 <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date Created</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Products</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
@@ -524,6 +565,11 @@ export default function Sales() {
               <tbody className="divide-y divide-gray-200">
                 {filteredSales.map((sale) => (
                   <tr key={sale.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 cursor-pointer"
+                        onClick={() => setInvoiceSaleId(sale.id)}
+                    >
+                      #{sale.id}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {new Date(sale.sale_date).toLocaleString()}
                     </td>
