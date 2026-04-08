@@ -617,10 +617,10 @@ export default function Sales() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="grid grid-cols-3 gap-2 min-w-[320px] items-center text-xs">
+                      <div className="flex gap-2 min-w-[320px] items-center text-xs">
 
                         {/* COLUMN 1 */}
-                        <div>
+                        <div className="flex-shrink-0">
                           {sale.status === 'completed' && (
                             <span className="text-green-500 italic">Sale Completed</span>
                           )}
@@ -638,7 +638,7 @@ export default function Sales() {
                         </div>
 
                         {/* COLUMN 2 */}
-                        <div>
+                        <div className="flex-shrink-0">
                           {(sale.status === 'pending' || sale.status === 'completed') && (
                             <button
                               onClick={() => {
@@ -655,7 +655,7 @@ export default function Sales() {
                         </div>
 
                         {/* COLUMN 3 */}
-                        <div>
+                        <div className="flex-shrink-0">
                           {sale.status === 'pending' && (
                             <button
                               onClick={() => setCancelSaleId(sale.id)}
