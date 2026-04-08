@@ -202,29 +202,30 @@ export default function Analytics() {
           <div className="p-6 border-b">
             <h2 className="text-lg font-semibold">Best Margins</h2>
           </div>
-
-          <table className="w-full min-w-[700px]">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sell Price</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Buy Price</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Margin %</th>
-              </tr>
-            </thead>
-            <tbody>
-              {topMargins.map((item, i) => (
-                <tr key={i} className="border-t">
-                  <td className="px-6 py-4 font-medium text-gray-900">{item.name}</td>
-                  <td className="px-6 py-4">${item.sell_price}</td>
-                  <td className="px-6 py-4">${item.buy_price}</td>
-                  <td className="px-6 py-4 text-green-600 font-semibold">
-                    {item.margin_percent}%
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[700px]">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sell Price</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Buy Price</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Margin %</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {topMargins.map((item, i) => (
+                  <tr key={i} className="border-t">
+                    <td className="px-6 py-4 font-medium text-gray-900">{item.name}</td>
+                    <td className="px-6 py-4">${item.sell_price}</td>
+                    <td className="px-6 py-4">${item.buy_price}</td>
+                    <td className="px-6 py-4 text-green-600 font-semibold">
+                      {item.margin_percent}%
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>  
         </div>
       </div>
 
@@ -280,36 +281,38 @@ export default function Analytics() {
         )}
 
         {/* TABLE */}
-        <table className="w-full min-w-[700px]">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Product
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Quantity
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Revenue
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {customerProducts.map((item, i) => (
-              <tr key={i} className="border-t">
-                <td className="px-6 py-4 font-medium text-gray-900">
-                  {item.product_name}
-                </td>
-                <td className="px-6 py-4">
-                  {item.quantity}
-                </td>
-                <td className="px-6 py-4">
-                  ${item.revenue}
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[700px]">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Product
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Quantity
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Revenue
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {customerProducts.map((item, i) => (
+                <tr key={i} className="border-t">
+                  <td className="px-6 py-4 font-medium text-gray-900">
+                    {item.product_name}
+                  </td>
+                  <td className="px-6 py-4">
+                    {item.quantity}
+                  </td>
+                  <td className="px-6 py-4">
+                    ${item.revenue}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/*reorder recommendation per season*/}
