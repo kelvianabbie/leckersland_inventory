@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const Customer = require('../models/Customer');
+const { sequelize } = require('../models/db');
 
 //get all customers
-const { sequelize } = require('../models/db');
 router.get('/', async (req, res) => {
   try {
     const includeInactive = req.query.includeInactive === 'true';

@@ -18,15 +18,21 @@ router.get('/', async (req, res) => {
         'id',
         'name',
         'address',
-        [sequelize.col('contact_info'), 'contact_info'],
+        ['contact_info', 'contact_info'],
         'created_at',
-        [sequelize.col('is_active'), 'is_active']
+        ['is_active', 'is_active']
       ]
     });
 
-    res.json({ success: true, data: { vendors } });
+    res.json({ 
+      success: true, 
+      data: { vendors } 
+    });
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
   }
 });
 
@@ -85,7 +91,7 @@ router.put('/:id/deactivate', async (req, res) => {
       return res.status(404).json({ success: false, error: 'Vendor not found' });
     }
 
-    vendor.is_active = false;
+    vendor.isActive = false;
     await vendor.save();
 
     res.json({ success: true });
@@ -103,7 +109,7 @@ router.put('/:id/reactivate', async (req, res) => {
       return res.status(404).json({ success: false, error: 'Vendor not found' });
     }
 
-    vendor.is_active = true;
+    vendor.isActive = true;
     await vendor.save();
 
     res.json({ success: true, data: vendor });
