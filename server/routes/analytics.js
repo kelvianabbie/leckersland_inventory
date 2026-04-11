@@ -102,6 +102,65 @@ router.get('/biggest-customer', async (req, res) => {
   }
 });
 
+//biggest vendor (all-time)
+router.get('/biggest-vendor', async (req, res) => {
+  try {
+    const { mode = 'expense' } = req.query;
+
+    const [vendor] = await sequelize.query(`
+      SELECT 
+        v.id,
+        v.name,
+        SUM(poi.quantity) as total_quantity,
+        SUM(poi.quantity * poi.buy_price) as total_expense
+      FROM purchase_orders po
+      JOIN vendors v ON po.vendor_id = v.id
+      JOIN purchase_order_items poi ON poi.purchase_order_id = po.id
+      WHERE po.status IN ('ordered', 'received')
+      GROUP BY v.id, v.name
+      ORDER BY 
+        ${mode === 'quantity' ? 'total_quantity' : 'total_expense'} DESC
+      LIMIT 1
+    `, {
+      type: sequelize.QueryTypes.SELECT
+    });
+
+    if (!vendor) {
+      return res.json({
+        success: true,
+        data: { vendor: null, products: [] }
+      });
+    }
+
+    const products = await sequelize.query(`
+      SELECT 
+        p.name as product_name,
+        SUM(poi.quantity) as quantity,
+        SUM(poi.quantity * poi.buy_price) as expense
+      FROM purchase_orders po
+      JOIN purchase_order_items poi ON poi.purchase_order_id = po.id
+      JOIN products p ON poi.product_id = p.id
+      WHERE po.vendor_id = :vendorId
+        AND po.status IN ('ordered', 'received')
+      GROUP BY p.id, p.name
+      ORDER BY ${mode === 'quantity' ? 'quantity' : 'expense'} DESC
+    `, {
+      type: sequelize.QueryTypes.SELECT,
+      replacements: {
+        vendorId: vendor.id
+      }
+    });
+
+    res.json({
+      success: true,
+      data: { vendor, products }
+    });
+
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 //top sellers by margin
 router.get('/top-margins', async (req, res) => {
   try {

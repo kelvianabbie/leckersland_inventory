@@ -72,6 +72,11 @@ export const analyticsAPI = {
       const res = await api.get('/analytics/biggest-customer', { params: { season, mode }});
       return res.data;
   },
+  getBiggestVendor: async (mode: 'quantity' | 'expense'): 
+    Promise<ApiResponse<{ vendor: any; products: any[] }>> => {
+      const res = await api.get('/analytics/biggest-vendor', { params: { mode } });
+      return res.data;
+  },
   getTopMargins: async (limit: number = 10): Promise<ApiResponse<{ results: TopMargin[] }>> => {
     const res = await api.get('/analytics/top-margins', { params: { limit } });
     return res.data;

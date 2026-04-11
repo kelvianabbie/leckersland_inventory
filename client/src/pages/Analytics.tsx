@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { analyticsAPI } from '../utils/api';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
-import { TopSeller, ReorderRecommendation, Season, BiggestCustomer, TopMargin, TopProfit } from '../types';
+import { TopSeller, ReorderRecommendation, Season, BiggestCustomer, TopMargin, TopProfit, BiggestVendor } from '../types';
 import Loading from '../components/Loading';
 import Alert from '../components/Alert';
 
@@ -28,10 +28,13 @@ export default function Analytics() {
   const [customerProducts, setCustomerProducts] = useState<any[]>([]);
   const [topMargins, setTopMargins] = useState<TopMargin[]>([]);
   const [topProfit, setTopProfit] = useState<TopProfit[]>([]);
+  const [biggestVendor, setBiggestVendor] = useState<any>(null);
+  const [vendorProducts, setVendorProducts] = useState<any[]>([]);
+  const [vendorMode, setVendorMode] = useState<'quantity' | 'expense'>('expense');
 
   useEffect(() => {
     loadData();
-  }, [season, mode]);
+  }, [season, mode, vendorMode]);
 
   const loadData = async () => {
     try {
@@ -41,12 +44,14 @@ export default function Analytics() {
         sellersRes,
         recsRes,
         biggestRes,
+        vendorRes,
         marginsRes,
         profitRes
       ] = await Promise.all([
         analyticsAPI.getTopSellers(season, 10),
         analyticsAPI.getReorderRecommendations(season),
         analyticsAPI.getBiggestCustomer(season, mode),
+        analyticsAPI.getBiggestVendor(vendorMode),
         analyticsAPI.getTopMargins(10),
         analyticsAPI.getTopProfit(season, 10)
       ]);
@@ -57,6 +62,8 @@ export default function Analytics() {
       setCustomerProducts(biggestRes.data?.products || []);
       setTopMargins(marginsRes.data?.results || []);
       setTopProfit(profitRes.data?.results || []);
+      setBiggestVendor(vendorRes.data?.vendor || null);
+      setVendorProducts(vendorRes.data?.products || []);
 
       setError(null);
     } catch (err) {
@@ -307,6 +314,92 @@ export default function Analytics() {
                   </td>
                   <td className="px-6 py-4">
                     ${item.revenue}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-lg shadow mb-8">
+        {/* HEADER */}
+        <div className="flex justify-between items-center p-6 border-b">
+          <h2 className="text-lg font-semibold">
+            Biggest Vendor (All Time)
+          </h2>
+
+          <div className="flex gap-2">
+            <button
+              onClick={() => setVendorMode('quantity')}
+              className={`px-3 py-1 rounded ${
+                vendorMode === 'quantity' ? 'bg-primary text-white' : 'bg-gray-100'
+              }`}
+            >
+              Quantity
+            </button>
+
+            <button
+              onClick={() => setVendorMode('expense')}
+              className={`px-3 py-1 rounded ${
+                vendorMode === 'expense' ? 'bg-primary text-white' : 'bg-gray-100'
+              }`}
+            >
+              Expense
+            </button>
+          </div>
+        </div>
+
+        {/* VENDOR SUMMARY */}
+        {biggestVendor && (
+          <div className="p-6 border-b">
+            <div className="text-xl font-bold">
+              {biggestVendor.name}
+            </div>
+
+            <div className="text-sm text-gray-600 mt-1">
+              {vendorMode === 'quantity' ? (
+                <>Total Quantity: {biggestVendor.total_quantity}</>
+              ) : (
+                <>Total Expense: ${biggestVendor.total_expense}</>
+              )}
+            </div>
+          </div>
+        )}
+
+        {!biggestVendor && (
+          <div className="p-6 text-gray-500">
+            No vendor data for this season
+          </div>
+        )}
+
+        {/* TABLE */}
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[700px]">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Product
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Quantity
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Expense
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {vendorProducts.map((item, i) => (
+                <tr key={i} className="border-t">
+                  <td className="px-6 py-4 font-medium text-gray-900">
+                    {item.product_name}
+                  </td>
+                  <td className="px-6 py-4">
+                    {item.quantity}
+                  </td>
+                  <td className="px-6 py-4">
+                    ${item.expense}
                   </td>
                 </tr>
               ))}

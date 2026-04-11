@@ -143,6 +143,13 @@ export interface BiggestCustomer {
   total_bought: number;
 }
 
+export interface BiggestVendor {
+  id: number;
+  name: string;
+  total_quantity: number;
+  total_expense: number;
+}
+
 export interface TopMargin {
   name: string;
   sku: string;
