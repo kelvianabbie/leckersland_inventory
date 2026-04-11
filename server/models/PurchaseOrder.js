@@ -2,6 +2,10 @@ const { sequelize } = require('./db');
 const { DataTypes } = require('sequelize');
 
 const PurchaseOrder = sequelize.define('PurchaseOrder', {
+  vendorId: {
+    type: DataTypes.INTEGER,
+    field: 'vendor_id'
+  },
   status: { 
     type: DataTypes.STRING, 
     defaultValue: 'pending',

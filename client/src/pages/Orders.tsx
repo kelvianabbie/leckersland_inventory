@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { ordersAPI, inventoryAPI } from '../utils/api';
-import { PurchaseOrder, InventoryItem } from '../types';
+import { ordersAPI, inventoryAPI, vendorsAPI } from '../utils/api';
+import { PurchaseOrder, InventoryItem, Vendor } from '../types';
 import Loading from '../components/Loading';
 import Alert from '../components/Alert';
 
@@ -27,6 +27,8 @@ export default function Orders() {
   }[]>([]);
   const [selectedProductId, setSelectedProductId] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [selectedVendorId, setSelectedVendorId] = useState(0);
 
   useEffect(() => {
     loadData();
@@ -35,19 +37,21 @@ export default function Orders() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [ordersRes, inventoryRes, allOrdersRes] = await Promise.all([
+      const [ordersRes, inventoryRes, allOrdersRes, vendorsRes] = await Promise.all([
       ordersAPI.getAll({
         page,
         limit,
         status: filter === 'all' ? undefined : filter
       }),
       inventoryAPI.getAll(),
-      ordersAPI.getAll({ limit: 1000 }) // load all orders for stats
+      ordersAPI.getAll({ limit: 1000 }), // load all orders for stats
+      vendorsAPI.getAll()
       ]);
       
       setOrders(ordersRes.data?.orders || []);
       setAllOrders(allOrdersRes.data?.orders || []);
       setInventory(inventoryRes.data?.inventory || []);
+      setVendors(vendorsRes.data?.vendors || []);
       setError(null);
     } catch (err) {
       setError('Failed to load orders');
@@ -104,6 +108,11 @@ export default function Orders() {
   const handleCreateOrder = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!selectedVendorId) {
+      setError('Vendor is required');
+      return;
+    }
+
     if (cart.length === 0) {
       setError('At least one product required');
       return;
@@ -111,6 +120,7 @@ export default function Orders() {
 
     try {
       await ordersAPI.create({
+        vendor_id: selectedVendorId,
         items: cart.map(item => ({
           product_id: item.product_id,
           quantity: item.quantity
@@ -118,6 +128,10 @@ export default function Orders() {
       });
 
       setCart([]);
+      setSelectedVendorId(0);
+      setSelectedProductId(0);
+      setQuantity(1);
+      
       setSuccess('Order created!');
       await loadData();
 
@@ -239,6 +253,18 @@ export default function Orders() {
         <h2 className="text-lg font-semibold mb-4">➕ Create New Purchase Order</h2>
 
         <form onSubmit={handleCreateOrder} className="space-y-6">
+          <select
+            value={selectedVendorId}
+            onChange={e => setSelectedVendorId(parseInt(e.target.value))}
+            className="px-4 py-2 border rounded-lg w-full"
+          >
+            <option value={0}>Select vendor</option>
+            {vendors.map(v => (
+              <option key={v.id} value={v.id}>
+                {v.name}
+              </option>
+            ))}
+          </select>
 
           {/* Add product row */}
           <div className="grid grid-cols-3 gap-4">
@@ -307,7 +333,7 @@ export default function Orders() {
               </table>
             </div>
           )}
-
+          
           {/* Submit */}
           <button
             type="submit"
@@ -331,6 +357,7 @@ export default function Orders() {
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date Created</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vendor</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ordered Date</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Received Date</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
@@ -352,6 +379,10 @@ export default function Orders() {
                       </div>
                     ))}
                   </td>
+                  {/*Vendor*/}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {order.vendor?.name || '-'}
+                  </td> 
                   {/*Ordered Date*/}
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     {!order.ordered_date && (

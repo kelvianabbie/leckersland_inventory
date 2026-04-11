@@ -104,10 +104,12 @@ export interface PurchaseOrder {
   ordered_date?: string;
   received_date?: string;
   created_at: string;
+  vendor?: Vendor;
   items: PurchaseOrderItem[];
 }
 
 export interface PurchaseOrderCreate {
+  vendor_id: number;
   items: {
     product_id: number;
     quantity: number;

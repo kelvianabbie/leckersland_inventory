@@ -31,6 +31,8 @@ router.get('/', async (req, res) => {
         po.ordered_date,
         po.received_date,
         po.created_at,
+        po.vendor_id,
+        v.name as vendor_name,
         poi.product_id,
         poi.quantity,
         poi.buy_price,
@@ -45,6 +47,7 @@ router.get('/', async (req, res) => {
         LIMIT :limit
         OFFSET :offset
       ) po
+      LEFT JOIN vendors v ON po.vendor_id = v.id
       LEFT JOIN purchase_order_items poi ON poi.purchase_order_id = po.id
       LEFT JOIN products p ON poi.product_id = p.id
       ORDER BY po.created_at DESC
@@ -64,6 +67,12 @@ router.get('/', async (req, res) => {
           ordered_date: row.ordered_date,
           received_date: row.received_date,
           created_at: row.created_at,
+          vendor: row.vendor_id
+            ? {
+                id: row.vendor_id,
+                name: row.vendor_name
+              }
+            : null,
           items: []
         };
       }
@@ -72,9 +81,8 @@ router.get('/', async (req, res) => {
         orderMap[row.id].items.push({
           product_id: row.product_id,
           quantity: row.quantity,
-          buy_price: parseFloat(row.buy_price),
+          buy_price: row.buy_price,
           product: {
-            id: row.product_id,
             name: row.product_name,
             sku: row.sku
           }
@@ -105,13 +113,17 @@ router.post('/', async (req, res) => {
   const t = await sequelize.transaction();
 
   try {
-    const { items } = req.body;
+    const { items, vendor_id } = req.body;
+
+    if (!vendor_id) {
+      throw new Error('Vendor is required');
+    }
 
     if (!items || items.length === 0) {
       throw new Error('Order must contain at least one item');
     }
 
-    const order = await PurchaseOrder.create({}, { transaction: t });
+    const order = await PurchaseOrder.create({vendorId: vendor_id}, { transaction: t });
 
     for (const item of items) {
       const product = await Product.findByPk(item.product_id, { transaction: t });
