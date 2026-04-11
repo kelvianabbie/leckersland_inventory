@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { productsAPI } from '../utils/api';
+import { productsAPI, api } from '../utils/api';
 import Alert from '../components/Alert';
 
 export default function AddProduct() {
   const navigate = useNavigate();
-
+  const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [form, setForm] = useState({
     name: '',
     sku: '',
@@ -16,7 +17,6 @@ export default function AddProduct() {
     initial_stock: 0,
     location: 'main-warehouse'
   });
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -167,6 +167,45 @@ export default function AddProduct() {
           </div>
 
         </form>
+
+        <div className="mb-6 border p-4 rounded-lg bg-gray-50">
+          <h3 className="font-medium mb-2">📂 Bulk Upload (CSV / Excel)</h3>
+
+          <input
+            type="file"
+            accept=".csv,.xlsx,.xls"
+            onChange={(e) => setFile(e.target.files?.[0] || null)}
+          />
+
+          <button
+            onClick={async () => {
+              if (!file) return;
+
+              const formData = new FormData();
+              formData.append('file', file);
+
+              try {
+                setUploading(true);
+
+                const res = await api.post('/products/bulk-upload', formData, {
+                  headers: { 'Content-Type': 'multipart/form-data' }
+                });
+
+                alert(`Created: ${res.data.data.created}, Skipped: ${res.data.data.skipped}`);
+              } catch (err) {
+                console.error(err);
+                alert('Upload failed');
+              } finally {
+                setUploading(false);
+                setFile(null);
+              }
+            }}
+            disabled={!file || uploading}
+            className="ml-3 px-4 py-2 bg-blue-600 text-white rounded"
+          >
+            {uploading ? 'Uploading...' : 'Upload'}
+          </button>
+        </div>
       </div>
     </div>
   );

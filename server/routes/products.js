@@ -4,6 +4,11 @@ const { sequelize } = require('../models/db');
 const { Op } = require('sequelize');
 const Product = require('../models/Product');
 const Inventory = require('../models/Inventory');
+const multer = require('multer');
+const csv = require('csv-parser');
+const XLSX = require('xlsx');
+const fs = require('fs');
+const upload = multer({ dest: 'uploads/' });
 
 // GET all products
 router.get('/', async (req, res) => {
@@ -187,6 +192,116 @@ router.put('/:id/reactivate', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
+router.post('/bulk-upload', upload.single('file'), async (req, res) => {
+  const transaction = await sequelize.transaction();
+
+  try {
+    const file = req.file;
+    if (!file) {
+      return res.status(400).json({ success: false, error: 'No file uploaded' });
+    }
+
+    let rows = [];
+
+    // CSV
+    if (file.mimetype === 'text/csv') {
+      rows = await new Promise((resolve, reject) => {
+        const results = [];
+        fs.createReadStream(file.path)
+          .pipe(csv())
+          .on('data', (data) => results.push(data))
+          .on('end', () => resolve(results))
+          .on('error', reject);
+      });
+    }
+
+    // Excel
+    else {
+      const workbook = XLSX.readFile(file.path);
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      rows = XLSX.utils.sheet_to_json(sheet);
+    }
+
+    let created = 0;
+    let skipped = 0;
+
+    const skus = rows.map(r => r.sku).filter(Boolean);
+
+    const existingProducts = await Product.findAll({
+      where: { sku: skus },
+      attributes: ['sku'],
+      transaction
+    });
+
+    const existingSkuSet = new Set(existingProducts.map(p => p.sku));
+
+    const normalize = (obj) => {
+      const newObj = {};
+      for (const key in obj) {
+        newObj[key.toLowerCase().replace(/\s+/g, '_')] = obj[key];
+      }
+      return newObj;
+    };
+
+    for (let row of rows) {
+      row = normalize(row);
+      const {
+        name,
+        sku,
+        category,
+        sell_price,
+        buy_price,
+        reorder_point,
+        initial_stock,
+        location
+      } = row;
+
+      if (!name || !sku) continue;
+
+      const parsedSell = Number(sell_price) || 0;
+      const parsedBuy = Number(buy_price) || 0;
+      const parsedStock = Math.max(0, Number(initial_stock) || 0);
+
+      if (existingSkuSet.has(sku)) {
+        skipped++;
+        continue;
+      }
+
+      const product = await Product.create({
+        name,
+        sku,
+        category,
+        sell_price: sell_price || 0,
+        buy_price: buy_price || 0,
+        reorderPoint: reorder_point || 10
+      }, { transaction });
+
+      await Inventory.create({
+        product_id: product.id,
+        quantity: initial_stock || 0,
+        location: location || 'main-warehouse'
+      }, { transaction });
+
+      created++;
+    }
+
+    await transaction.commit();
+
+    if (fs.existsSync(file.path)) {
+      fs.unlinkSync(file.path);
+    }
+
+    res.json({
+      success: true,
+      data: { created, skipped }
+    });
+
+  } catch (error) {
+    await transaction.rollback();
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 
