@@ -43,7 +43,7 @@ router.post('/', async (req, res) => {
 
     const vendor = await Vendor.create({
       name,
-      contact_info,
+      contactInfo: contact_info,
       address
     });
 
@@ -68,7 +68,7 @@ router.put('/:id', async (req, res) => {
       });
     }
 
-    await vendor.update({ name, contact_info, address });
+    await vendor.update({ name, contactInfo: contact_info, address });
 
     res.json({ success: true, data: { vendor } });
 

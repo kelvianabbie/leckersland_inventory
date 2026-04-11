@@ -206,7 +206,6 @@ export default function Vendors() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Address</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>

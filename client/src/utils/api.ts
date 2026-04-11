@@ -13,7 +13,8 @@ import {
   Season,
   BiggestCustomer,
   TopMargin,
-  TopProfit
+  TopProfit,
+  Vendor
 } from '../types';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://leckersland-inventory.onrender.com/api';
@@ -134,18 +135,20 @@ export const customersAPI = {
 
 //Vendors endpoints
 export const vendorsAPI = {
-  getAll: async (params?: { includeInactive?: boolean }) =>
-    api.get('/vendors', { params }),
-
-  create: (data: { name: string; contact_info?: string; address?: string }) =>
-    api.post('/vendors', data),
-
+  getAll: async(params?: { includeInactive?: boolean }): 
+    Promise<ApiResponse<{ vendors: Vendor[] }>> => {
+    const response = await api.get('/vendors', { params });
+    return response.data;
+  },
+  create: async (data: { name: string; contact_info?: string; address?: string }):
+    Promise<ApiResponse<{ vendor: Vendor }>> => {
+    const response = await api.post('/vendors', data);
+    return response.data;
+  },
   update: (id: number, data: { name: string; contact_info?: string; address?: string }) =>
     api.put(`/vendors/${id}`, data),
-
   deactivate: (id: number) =>
     api.put(`/vendors/${id}/deactivate`),
-
   reactivate: (id: number) =>
     api.put(`/vendors/${id}/reactivate`)
 };
