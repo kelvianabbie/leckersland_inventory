@@ -132,6 +132,24 @@ export const customersAPI = {
     api.put(`/customers/${id}/reactivate`)
 };
 
+//Vendors endpoints
+export const vendorsAPI = {
+  getAll: async (params?: { includeInactive?: boolean }) =>
+    api.get('/vendors', { params }),
+
+  create: (data: { name: string; contact_info?: string; address?: string }) =>
+    api.post('/vendors', data),
+
+  update: (id: number, data: { name: string; contact_info?: string; address?: string }) =>
+    api.put(`/vendors/${id}`, data),
+
+  deactivate: (id: number) =>
+    api.put(`/vendors/${id}/deactivate`),
+
+  reactivate: (id: number) =>
+    api.put(`/vendors/${id}/reactivate`)
+};
+
 //Orders endpoints
 export const ordersAPI = {
   getAll: async (params: { status?: string; limit?: number; page?: number } = {}): 

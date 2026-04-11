@@ -13,6 +13,7 @@ const navigation: NavItem[] = [
   { name: 'Orders', href: '/orders', icon: '📋' },
   { name: 'Sales', href: '/sales', icon: '💰' },
   { name: 'Customers', href: '/customers', icon: '👥' },
+  { name: 'Vendors', href: '/vendors', icon: '🏭' },
   { name: 'Analytics', href: '/analytics', icon: '📈' },
 ];
 

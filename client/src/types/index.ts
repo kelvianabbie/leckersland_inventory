@@ -46,6 +46,15 @@ export interface Customer {
   is_active: boolean;
 }
 
+export interface Vendor {
+  id: number;
+  name: string;
+  contact_info?: string;
+  address?: string;
+  created_at: string;
+  is_active: boolean;
+}
+
 export interface SaleItem {
   product_id: number;
   quantity: number;
