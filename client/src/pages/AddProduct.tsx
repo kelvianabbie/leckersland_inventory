@@ -191,7 +191,17 @@ export default function AddProduct() {
                   headers: { 'Content-Type': 'multipart/form-data' }
                 });
 
-                alert(`Created: ${res.data.data.created}, Skipped: ${res.data.data.skipped}`);
+                const { created, skipped, skipped_skus } = res.data.data;
+                let message = `Created: ${created}\nSkipped: ${skipped}`;
+
+                if (skipped_skus?.length) {
+                  message += '\n\nSkipped Details:\n';
+                  skipped_skus.forEach((item: any) => {
+                    message += `- ${item.sku} (${item.reason})\n`;
+                  });
+                }
+
+                alert(message);
               } catch (err) {
                 console.error(err);
                 alert('Upload failed');

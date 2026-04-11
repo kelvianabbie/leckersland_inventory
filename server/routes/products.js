@@ -227,6 +227,7 @@ router.post('/bulk-upload', upload.single('file'), async (req, res) => {
 
     let created = 0;
     let skipped = 0;
+    let skippedSkus = [];
 
     const skus = rows.map(r => r.sku).filter(Boolean);
 
@@ -237,6 +238,7 @@ router.post('/bulk-upload', upload.single('file'), async (req, res) => {
     });
 
     const existingSkuSet = new Set(existingProducts.map(p => p.sku));
+    const seenInFile = new Set();
 
     const normalize = (obj) => {
       const newObj = {};
@@ -259,7 +261,11 @@ router.post('/bulk-upload', upload.single('file'), async (req, res) => {
         location
       } = row;
 
-      if (!name || !sku) continue;
+      if (!name || !sku) {
+        skipped++;
+        skippedSkus.push({ sku: sku || 'UNKNOWN', reason: 'missing_required_fields' });
+        continue;
+      }
 
       const parsedSell = Number(sell_price) || 0;
       const parsedBuy = Number(buy_price) || 0;
@@ -267,6 +273,13 @@ router.post('/bulk-upload', upload.single('file'), async (req, res) => {
 
       if (existingSkuSet.has(sku)) {
         skipped++;
+        skippedSkus.push({ sku, reason: 'already_exists' });
+        continue;
+      }
+
+      if (seenInFile.has(sku)) {
+        skipped++;
+        skippedSkus.push({ sku, reason: 'duplicate_in_file' });
         continue;
       }
 
@@ -286,6 +299,8 @@ router.post('/bulk-upload', upload.single('file'), async (req, res) => {
       }, { transaction });
 
       created++;
+      seenInFile.add(sku);
+      existingSkuSet.add(sku);
     }
 
     await transaction.commit();
@@ -296,7 +311,7 @@ router.post('/bulk-upload', upload.single('file'), async (req, res) => {
 
     res.json({
       success: true,
-      data: { created, skipped }
+      data: { created, skipped, skipped_skus: skippedSkus }
     });
 
   } catch (error) {
