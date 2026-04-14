@@ -9,9 +9,9 @@ interface NavItem {
 
 const navigation: NavItem[] = [
   { name: 'Dashboard', href: '/', icon: '📊' },
-  { name: 'Inventory', href: '/inventory', icon: '📦' },
-  { name: 'Orders', href: '/orders', icon: '📋' },
-  { name: 'Sales', href: '/sales', icon: '💰' },
+  { name: 'Product', href: '/inventory', icon: '📦' },
+  { name: 'Purchase Order', href: '/orders', icon: '📋' },
+  { name: 'Invoice', href: '/sales', icon: '💰' },
   { name: 'Customers', href: '/customers', icon: '👥' },
   { name: 'Vendors', href: '/vendors', icon: '🏭' },
   { name: 'Analytics', href: '/analytics', icon: '📈' },

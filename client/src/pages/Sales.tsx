@@ -219,7 +219,7 @@ export default function Sales() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">💰 Record Sale</h1>
+        <h1 className="text-2xl font-bold mb-2">💰 Generate Invoice</h1>
         <p className="text-gray-600">Log sales to track inventory and customer purchases</p>
       </div>
 

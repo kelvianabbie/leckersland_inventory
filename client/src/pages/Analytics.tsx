@@ -369,7 +369,7 @@ export default function Analytics() {
 
         {!biggestVendor && (
           <div className="p-6 text-gray-500">
-            No vendor data for this season
+            No vendor data
           </div>
         )}
 

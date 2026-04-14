@@ -103,7 +103,7 @@ export default function Inventory() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">📦 Inventory Management</h1>
+        <h1 className="text-2xl font-bold mb-2">📦 Product</h1>
         <p className="text-gray-600">Track stock levels across all products</p>
       </div>
 

@@ -185,8 +185,8 @@ export default function Orders() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">📋 Purchase Orders</h1>
-        <p className="text-gray-600">Manage orders to Taiwan suppliers</p>
+        <h1 className="text-2xl font-bold mb-2">📋 Purchase Order</h1>
+        <p className="text-gray-600">Manage orders to suppliers</p>
       </div>
 
       {error && <Alert type="error">{error}</Alert>}
