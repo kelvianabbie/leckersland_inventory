@@ -71,6 +71,7 @@ export interface Sale {
   completed_date?: string | null;
   customer?: Customer;
   items: SaleItem[];
+  total_paid?: number;
 }
 
 export interface SaleCreateItem {

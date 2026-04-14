@@ -192,6 +192,13 @@ export const productsAPI = {
   reactivate: (id: number) => api.put(`/products/${id}/reactivate`)
 };
 
+export const paymentsAPI = {
+  create: (data: { sale_id: number; amount: number; payment_date?: string }) =>
+    api.post('/payments', data),
+  getBySale: (saleId: number) =>
+    api.get(`/payments/${saleId}`)
+}
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {

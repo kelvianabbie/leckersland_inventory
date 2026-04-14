@@ -137,7 +137,8 @@ router.get('/', async (req, res) => {
         si.quantity,
         si.unit_price,
         p.name as product_name,
-        p.sku
+        p.sku,
+        COALESCE(pay.total_paid, 0) as total_paid
       FROM (
         SELECT *
         FROM sales
@@ -152,6 +153,11 @@ router.get('/', async (req, res) => {
       LEFT JOIN customers c ON s.customer_id = c.id
       LEFT JOIN sale_items si ON si.sale_id = s.id
       LEFT JOIN products p ON si.product_id = p.id
+      LEFT JOIN (
+        SELECT sale_id, SUM(amount) as total_paid
+        FROM payments
+        GROUP BY sale_id
+      ) pay ON pay.sale_id = s.id
       ORDER BY s.sale_date DESC
     `, {
       replacements: {
@@ -180,7 +186,8 @@ router.get('/', async (req, res) => {
             name: row.customer_name,
             type: row.customer_type
           } : null,
-          items: []
+          items: [],
+          total_paid: parseFloat(row.total_paid || 0),
         };
       }
 

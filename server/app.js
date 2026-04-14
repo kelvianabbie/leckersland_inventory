@@ -13,6 +13,7 @@ const invoiceRoutes = require('./routes/invoice');
 const authRoutes = require('./routes/auth');
 const authMiddleware = require('./middleware/auth');
 const vendorRoutes = require('./routes/vendors');
+const paymentRoutes = require('./routes/payments');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -48,6 +49,7 @@ app.use('/api/orders', authMiddleware, orderRoutes);
 app.use('/api/products', authMiddleware, productRoutes);
 app.use('/api/invoice', authMiddleware, invoiceRoutes);
 app.use('/api/vendors', authMiddleware, vendorRoutes);
+app.use('/api/payments', authMiddleware, paymentRoutes);
 
 //API health check
 app.get('/api/health', (req, res) => {

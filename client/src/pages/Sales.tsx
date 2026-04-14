@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { salesAPI, customersAPI, inventoryAPI } from '../utils/api';
+import { salesAPI, customersAPI, inventoryAPI, paymentsAPI } from '../utils/api';
 import { Sale, Customer, InventoryItem, SaleCreate, Season } from '../types';
 import Loading from '../components/Loading';
 import Alert from '../components/Alert';
@@ -25,6 +25,11 @@ export default function Sales() {
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://leckersland-inventory.onrender.com/api';
   const token = localStorage.getItem('token');
   const [invoiceSaleId, setInvoiceSaleId] = useState<number | ''>('');
+  const [paymentSaleId, setPaymentSaleId] = useState<number | null>(null);
+  const [paymentAmount, setPaymentAmount] = useState<number>(0);
+  const [paymentDate, setPaymentDate] = useState<string>('');
+  const [paymentHistory, setPaymentHistory] = useState<any[]>([]);
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
   // Filter state
   const [statusFilter, setStatusFilter] = useState<SaleStatus>('all');
@@ -201,6 +206,52 @@ export default function Sales() {
   };
 
   const availableProducts = inventory.filter(item => item.quantity > 0);
+
+  const openPaymentModal = async (saleId: number) => {
+    try {
+      setPaymentSaleId(saleId);
+      setPaymentLoading(true);
+
+      const res = await paymentsAPI.getBySale(saleId);
+      setPaymentHistory(res.data?.payments || []);
+    } catch (err) {
+      setError('Failed to load payment history');
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
+  const handleAddPayment = async () => {
+    if (!paymentSaleId || paymentAmount <= 0) {
+      setError('Invalid payment');
+      return;
+    }
+
+    try {
+      setPaymentLoading(true);
+
+      await paymentsAPI.create({
+        sale_id: paymentSaleId,
+        amount: paymentAmount,
+        payment_date: paymentDate || undefined
+      });
+
+      setSuccess('Payment recorded');
+
+      // Refresh sales + payment history
+      await loadData();
+      const res = await paymentsAPI.getBySale(paymentSaleId);
+      setPaymentHistory(res.data?.payments || []);
+
+      setPaymentAmount(0);
+      setPaymentDate('');
+
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Failed to add payment');
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
 
   // Calculate stats
   const stats = {
@@ -563,11 +614,17 @@ export default function Sales() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {filteredSales.map((sale) => (
-                  <tr key={sale.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 cursor-pointer"
-                        onClick={() => setInvoiceSaleId(sale.id)}
-                    >
+                {filteredSales.map((sale) => {
+                  const total = sale.items.reduce(
+                    (sum, item) => sum + item.quantity * item.unit_price,
+                    0
+                  );
+
+                  return (
+                    <tr key={sale.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 cursor-pointer"
+                          onClick={() => setInvoiceSaleId(sale.id)}
+                      >
                       #{sale.id}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -580,11 +637,10 @@ export default function Sales() {
                         </div>
                       ))}
                     </td>
-                    <td className="px-6 py-4 text-sm font-medium text-primary">
-                      $
-                      {sale.items
-                        .reduce((sum, item) => sum + item.quantity * item.unit_price, 0)
-                        .toFixed(2)}
+                    <td className="px-6 py-4 text-sm font-medium text-primary cursor-pointer" 
+                      onClick={() => openPaymentModal(sale.id)}
+                    >
+                      ${total.toFixed(2)} / ${sale.total_paid?.toFixed(2) || '0.00'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">{sale.customer?.name || 'N/A'}</div>
@@ -669,7 +725,7 @@ export default function Sales() {
                       </div>
                     </td>
                   </tr>
-                ))}
+                )})}
               </tbody>
             </table>
             <div className="flex justify-center gap-4 p-6">
@@ -701,6 +757,64 @@ export default function Sales() {
           </div>
         )}
       </div>
+      {paymentSaleId && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-lg">
+            
+            <h2 className="text-lg font-semibold mb-4">
+              Payments for Sale #{paymentSaleId}
+            </h2>
+
+            {/* Payment History */}
+            <div className="max-h-40 overflow-y-auto border rounded mb-4">
+              {paymentLoading ? (
+                <p className="p-3 text-sm">Loading...</p>
+              ) : paymentHistory.length === 0 ? (
+                <p className="p-3 text-sm text-gray-500">No payments yet</p>
+              ) : (
+                paymentHistory.map((p, i) => (
+                  <div key={i} className="p-2 text-sm border-b">
+                    ${p.amount} — {new Date(p.paymentDate).toLocaleString()}
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Add Payment */}
+            <div className="flex flex-col gap-3">
+              <input
+                type="number"
+                placeholder="Amount"
+                value={paymentAmount}
+                onChange={(e) => setPaymentAmount(parseFloat(e.target.value) || 0)}
+                className="border px-3 py-2 rounded"
+              />
+
+              <input
+                type="datetime-local"
+                value={paymentDate}
+                onChange={(e) => setPaymentDate(e.target.value)}
+                className="border px-3 py-2 rounded"
+              />
+
+              <button
+                onClick={handleAddPayment}
+                className="bg-green-600 text-white py-2 rounded"
+              >
+                Add Payment
+              </button>
+            </div>
+
+            <button
+              onClick={() => setPaymentSaleId(null)}
+              className="mt-4 text-sm text-gray-500"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
       <ConfirmModal
         isOpen={cancelSaleId !== null}
         title="Cancel Sale"
