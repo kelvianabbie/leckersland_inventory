@@ -213,7 +213,7 @@ export default function Sales() {
       setPaymentLoading(true);
 
       const res = await paymentsAPI.getBySale(saleId);
-      setPaymentHistory(res.data?.payments || []);
+      setPaymentHistory(res.data?.data?.payments || []);
     } catch (err) {
       setError('Failed to load payment history');
     } finally {
@@ -230,6 +230,20 @@ export default function Sales() {
     try {
       setPaymentLoading(true);
 
+      const sale = sales.find(s => s.id === paymentSaleId);
+
+      if (sale) {
+        const total = sale.items.reduce(
+          (sum, item) => sum + item.quantity * item.unit_price,
+          0
+        );
+
+        if ((sale.total_paid || 0) + paymentAmount > total) {
+          setError('Payment exceeds total sale price');
+          return;
+        }
+      }
+
       await paymentsAPI.create({
         sale_id: paymentSaleId,
         amount: paymentAmount,
@@ -241,7 +255,7 @@ export default function Sales() {
       // Refresh sales + payment history
       await loadData();
       const res = await paymentsAPI.getBySale(paymentSaleId);
-      setPaymentHistory(res.data?.payments || []);
+      setPaymentHistory(res.data?.data?.payments || []);
 
       setPaymentAmount(0);
       setPaymentDate('');

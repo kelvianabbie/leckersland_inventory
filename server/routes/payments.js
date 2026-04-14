@@ -17,6 +17,31 @@ router.post('/', async (req, res) => {
       });
     }
 
+    const items = await SaleItem.findAll({
+      where: { saleId: sale_id }
+    });
+
+    const totalSale = items.reduce(
+      (sum, item) => sum + item.quantity * item.unitPrice,
+      0
+    );
+
+    const existingPayments = await Payment.findAll({
+      where: { saleId: sale_id }
+    });
+
+    const totalPaid = existingPayments.reduce(
+      (sum, p) => sum + parseFloat(p.amount),
+      0
+    );
+
+    if (totalPaid + amount > totalSale) {
+      return res.status(400).json({
+        success: false,
+        error: 'Payment exceeds total sale amount'
+      });
+    }
+
     const payment = await Payment.create({
       saleId: sale_id,
       amount,
