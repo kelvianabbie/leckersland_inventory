@@ -30,6 +30,7 @@ export default function Sales() {
   const [paymentDate, setPaymentDate] = useState<string>('');
   const [paymentHistory, setPaymentHistory] = useState<any[]>([]);
   const [paymentLoading, setPaymentLoading] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   // Filter state
   const [statusFilter, setStatusFilter] = useState<SaleStatus>('all');
@@ -211,6 +212,7 @@ export default function Sales() {
     try {
       setPaymentSaleId(saleId);
       setPaymentLoading(true);
+      setPaymentError(null);
 
       const res = await paymentsAPI.getBySale(saleId);
       setPaymentHistory(res.data?.data?.payments || []);
@@ -229,6 +231,7 @@ export default function Sales() {
 
     try {
       setPaymentLoading(true);
+      setPaymentError(null);
 
       const sale = sales.find(s => s.id === paymentSaleId);
 
@@ -261,7 +264,7 @@ export default function Sales() {
       setPaymentDate('');
 
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to add payment');
+      setPaymentError(err.response?.data?.error || 'Failed to add payment');
     } finally {
       setPaymentLoading(false);
     }
@@ -779,6 +782,10 @@ export default function Sales() {
               Payments for Sale #{paymentSaleId}
             </h2>
 
+            {paymentError && (
+              <Alert type="error">{paymentError}</Alert>
+            )}
+
             {/* Payment History */}
             <div className="max-h-40 overflow-y-auto border rounded mb-4">
               {paymentLoading ? (
@@ -820,7 +827,7 @@ export default function Sales() {
             </div>
 
             <button
-              onClick={() => setPaymentSaleId(null)}
+              onClick={() => {setPaymentSaleId(null); setPaymentError(null);}}
               className="mt-4 text-sm text-gray-500"
             >
               Close

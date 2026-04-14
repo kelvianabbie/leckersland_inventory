@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Payment = require('../models/Payment');
 const Sale = require('../models/Sale');
+const SaleItem = require('../models/SaleItem');
 
 // Add payment
 router.post('/', async (req, res) => {
