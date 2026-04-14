@@ -605,7 +605,7 @@ export default function Sales() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date Created</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Products</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total / Paid</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Season</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Completed Date</th>
