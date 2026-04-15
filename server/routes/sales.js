@@ -62,11 +62,16 @@ router.post('/', async (req, res) => {
     for (const item of items) {
       const product = await Product.findByPk(item.product_id, { transaction: t });
 
+      const finalPrice =
+        item.unit_price !== undefined && item.unit_price !== null
+          ? item.unit_price
+          : product.sell_price;
+
       await require('../models/SaleItem').create({
         saleId: sale.id,
         productId: item.product_id,
         quantity: item.quantity,
-        unitPrice: product.sell_price
+        unitPrice: finalPrice
       }, { transaction: t });
     }
 

@@ -31,6 +31,7 @@ export default function Sales() {
   const [paymentHistory, setPaymentHistory] = useState<any[]>([]);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [price, setPrice] = useState<string>(''); // string so empty is allowed
 
   // Filter state
   const [statusFilter, setStatusFilter] = useState<SaleStatus>('all');
@@ -41,7 +42,7 @@ export default function Sales() {
   const [cart, setCart] = useState<{
     product_id: number;
     name: string;
-    unit_price: number;
+    unit_price: number | null;
     quantity: number;
   }[]>([]);
 
@@ -112,12 +113,13 @@ export default function Sales() {
         {
           product_id: selectedProductId,
           name: product.product_name,
-          unit_price: (product as any).sell_price || 0, // we'll improve later
+          unit_price: price === '' ? null : parseFloat(price),
           quantity
         }
       ];
     });
 
+    setPrice('');
     setSelectedProductId(0);
     setQuantity(1);
   };
@@ -139,7 +141,8 @@ export default function Sales() {
         sale_date: saleDate || undefined,
         items: cart.map(item => ({
           product_id: item.product_id,
-          quantity: item.quantity
+          quantity: item.quantity,
+          unit_price: item.unit_price // optional field
         }))
       });
 
@@ -314,7 +317,7 @@ export default function Sales() {
             </select>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <select
               value={selectedProductId}
               onChange={e => setSelectedProductId(parseInt(e.target.value))}
@@ -336,6 +339,14 @@ export default function Sales() {
               className="px-4 py-2 border rounded-lg"
             />
 
+            <input
+              type="number"
+              placeholder="Custom price (optional)"
+              value={price}
+              onChange={e => setPrice(e.target.value)}
+              className="px-4 py-2 border rounded-lg"
+            />
+
             <button
               type="button"
               onClick={handleAddToCart}
@@ -352,6 +363,7 @@ export default function Sales() {
                   <tr>
                     <th className="px-4 py-2 text-left">Product</th>
                     <th className="px-4 py-2 text-left">Qty</th>
+                    <th className="px-4 py-2 text-left">Price</th>
                     <th className="px-4 py-2 text-left">Remove</th>
                   </tr>
                 </thead>
@@ -360,6 +372,24 @@ export default function Sales() {
                     <tr key={item.product_id}>
                       <td className="px-4 py-2">{item.name}</td>
                       <td className="px-4 py-2">{item.quantity}</td>
+                      <td className="px-4 py-2">
+                        <input
+                          type="number"
+                          value={item.unit_price ?? ''}
+                          placeholder="default"
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setCart(prev =>
+                              prev.map(i =>
+                                i.product_id === item.product_id
+                                  ? { ...i, unit_price: value === '' ? null : parseFloat(value) }
+                                  : i
+                              )
+                            );
+                          }}
+                          className="w-24 border rounded px-2 py-1"
+                        />
+                      </td>
                       <td className="px-4 py-2">
                         <button
                           type="button"
