@@ -121,9 +121,18 @@ export default function Customers() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">👥 Customers</h1>
-        <p className="text-gray-600">Manage customer records</p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold mb-2">👥 Customers</h1>
+          <p className="text-gray-600">Manage customer records</p>
+        </div>
+
+        <button
+          onClick={() => navigate('/customers/add')}
+          className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary"
+        >
+          ➕ Add Customer
+        </button>
       </div>
 
       <div className="flex items-center gap-2 mb-4">
