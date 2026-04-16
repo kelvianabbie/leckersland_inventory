@@ -90,7 +90,8 @@ export const analyticsAPI = {
 // Sales endpoints
 export const salesAPI = {
   getAll: async (params: { 
-    limit?: number; 
+    limit?: number;
+    page?: number;
     customer_id?: number; 
     product_id?: number;
     status?: 'pending' | 'completed' | 'cancelled';

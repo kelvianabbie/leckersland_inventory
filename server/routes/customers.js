@@ -118,7 +118,17 @@ router.put('/:id/reactivate', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
   try {
-    const customer = await require('../models/Customer').findByPk(req.params.id);
+    const customer = await Customer.findByPk(req.params.id, {
+      attributes: [
+        'id',
+        'name',
+        'type',
+        'address',
+        [sequelize.col('contact_info'), 'contact_info'],
+        'created_at',
+        [sequelize.col('is_active'), 'is_active']
+      ]
+    });
 
     if (!customer) {
       return res.status(404).json({

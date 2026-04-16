@@ -178,7 +178,7 @@ export default function EditCustomer() {
 
             <button
               type="button"
-              onClick={() => navigate(`/customers/${id}`)}
+              onClick={() => navigate(`/customers`)}
               className="px-6 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
             >
               Cancel

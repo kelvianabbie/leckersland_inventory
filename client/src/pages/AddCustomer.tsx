@@ -38,7 +38,7 @@ export default function AddCustomer() {
 
       // Optional: redirect after short delay
       setTimeout(() => {
-        navigate(`/customers/${res.data?.customer.id}`);
+        navigate(`/customers`);
       }, 800);
 
     } catch (err: any) {

@@ -11,10 +11,13 @@ export default function CustomerDetail() {
   const [sales, setSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [month, setMonth] = useState<number | 'all'>('all');
+  const limit = 20;
 
   useEffect(() => {
     loadData();
-  }, [id]);
+  }, [id, page, month]);
 
   const loadData = async () => {
     try {
@@ -22,7 +25,12 @@ export default function CustomerDetail() {
 
       const [customerRes, salesRes] = await Promise.all([
         customersAPI.getById(Number(id)),
-        salesAPI.getAll({ customer_id: Number(id), limit: 10 })
+        salesAPI.getAll({
+          customer_id: Number(id),
+          limit,
+          page,
+          ...(month !== 'all' && { month })
+        })
       ]);
 
       setCustomer(customerRes.data?.customer || null);
@@ -94,38 +102,147 @@ export default function CustomerDetail() {
         </div>
       </div>
 
-      {/* RECENT SALES */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold mb-4">Recent Sales</h2>
-
-        {sales.length === 0 ? (
-          <p className="text-gray-500 text-sm">No sales yet</p>
-        ) : (
-          <div className="space-y-3">
-            {sales.map((sale) => (
-              <div
-                key={sale.id}
-                className="border rounded p-3 flex justify-between text-sm"
-              >
-                <div>
-                  <p className="font-medium">Sale #{sale.id}</p>
-                  <p className="text-gray-500">
-                    {new Date(sale.sale_date).toLocaleDateString()}
-                  </p>
-                </div>
-
-                <div className="text-right">
-                  <p className="capitalize">{sale.status}</p>
-                  <p className="text-gray-600">
-                    {sale.items.length} items
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+      <div className="flex gap-4 mb-4">
+        <select
+          value={month}
+          onChange={(e) => {
+            const val = e.target.value;
+            setMonth(val === 'all' ? 'all' : Number(val));
+            setPage(1);
+          }}
+          className="px-4 py-2 border rounded-lg"
+        >
+          <option value="all">All Months</option>
+          <option value="1">Jan</option>
+          <option value="2">Feb</option>
+          <option value="3">Mar</option>
+          <option value="4">Apr</option>
+          <option value="5">May</option>
+          <option value="6">Jun</option>
+          <option value="7">Jul</option>
+          <option value="8">Aug</option>
+          <option value="9">Sep</option>
+          <option value="10">Oct</option>
+          <option value="11">Nov</option>
+          <option value="12">Dec</option>
+        </select>
       </div>
 
+      {/* SALES */}
+      <div className="bg-white rounded-lg shadow">
+        <div className="p-6 border-b">
+          <h2 className="text-lg font-semibold">Sales History</h2>
+        </div>
+
+        <div className="p-6">
+          {/* Month Filter */}
+          <div className="flex gap-4 mb-4">
+            <select
+              value={month}
+              onChange={(e) => {
+                const val = e.target.value;
+                setMonth(val === 'all' ? 'all' : Number(val));
+                setPage(1);
+              }}
+              className="px-4 py-2 border rounded-lg"
+            >
+              <option value="all">All Months</option>
+              {[...Array(12)].map((_, i) => (
+                <option key={i + 1} value={i + 1}>
+                  {new Date(0, i).toLocaleString('default', { month: 'short' })}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {sales.length === 0 ? (
+            <p className="text-gray-500 text-sm">No sales found</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[700px]">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs">ID</th>
+                    <th className="px-6 py-3 text-left text-xs">Date</th>
+                    <th className="px-6 py-3 text-left text-xs">Products</th>
+                    <th className="px-6 py-3 text-left text-xs">Total / Paid</th>
+                    <th className="px-6 py-3 text-left text-xs">Season</th>
+                    <th className="px-6 py-3 text-left text-xs">Completed</th>
+                    <th className="px-6 py-3 text-left text-xs">Status</th>
+                  </tr>
+                </thead>
+
+                <tbody className="divide-y">
+                  {sales.map((sale) => {
+                    const total = sale.items.reduce(
+                      (sum, item) => sum + item.quantity * item.unit_price,
+                      0
+                    );
+
+                    return (
+                      <tr key={sale.id}>
+                        <td className="px-6 py-4">#{sale.id}</td>
+
+                        <td className="px-6 py-4">
+                          {new Date(sale.sale_date).toLocaleString()}
+                        </td>
+
+                        <td className="px-6 py-4">
+                          {sale.items.map((item) => (
+                            <div key={item.product_id}>
+                              {item.product?.name} × {item.quantity}
+                            </div>
+                          ))}
+                        </td>
+
+                        <td className="px-6 py-4">
+                          ${total.toFixed(2)} / ${sale.total_paid?.toFixed(2) || '0.00'}
+                        </td>
+
+                        <td className="px-6 py-4 capitalize">
+                          {sale.season}
+                        </td>
+
+                        <td className="px-6 py-4">
+                          {sale.completed_date
+                            ? new Date(sale.completed_date).toLocaleString()
+                            : '-'}
+                        </td>
+
+                        <td className="px-6 py-4 capitalize">
+                          {sale.status}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+
+              {/* Pagination */}
+              <div className="flex justify-center gap-4 p-6">
+                <button
+                  onClick={() => setPage(p => Math.max(p - 1, 1))}
+                  className="px-4 py-2 bg-gray-200 rounded"
+                >
+                  Previous
+                </button>
+
+                <span className="px-4 py-2 font-medium">
+                  Page {page}
+                </span>
+
+                <button
+                  disabled={sales.length < limit}
+                  onClick={() => setPage(p => p + 1)}
+                  className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
