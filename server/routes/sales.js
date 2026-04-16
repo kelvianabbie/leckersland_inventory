@@ -126,6 +126,7 @@ router.get('/', async (req, res) => {
     const parsedLimit = parseInt(limit);
     const parsedPage = parseInt(page);
     const offset = (parsedPage - 1) * parsedLimit;
+    const { month } = req.query;
 
     const sales = await sequelize.query(`
       SELECT 
@@ -151,6 +152,7 @@ router.get('/', async (req, res) => {
           ${status ? 'AND status = :status' : ''}
           ${customer_id ? 'AND customer_id = :customer_id' : ''}
           ${season ? 'AND season = :season' : ''}
+          ${month ? "AND EXTRACT(MONTH FROM sale_date) = :month" : ""}
         ORDER BY sale_date DESC
         LIMIT :limit
         OFFSET :offset
@@ -170,7 +172,8 @@ router.get('/', async (req, res) => {
         offset,
         ...(status && { status }),
         ...(customer_id && { customer_id }),
-        ...(season && { season })
+        ...(season && { season }),
+        ...(month && { month: parseInt(month) })
       },
       type: QueryTypes.SELECT
     });

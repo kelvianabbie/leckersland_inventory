@@ -95,6 +95,7 @@ export const salesAPI = {
     product_id?: number;
     status?: 'pending' | 'completed' | 'cancelled';
     season?: Season;
+    month?: number;
   } = {}): Promise<ApiResponse<{ sales: Sale[] }>> => {
     const response = await api.get('/sales', { params });
     return response.data;
@@ -135,7 +136,12 @@ export const customersAPI = {
   deactivate: (id: number) =>
     api.put(`/customers/${id}/deactivate`),
   reactivate: (id: number) =>
-    api.put(`/customers/${id}/reactivate`)
+    api.put(`/customers/${id}/reactivate`),
+  getById: async (id: number): 
+    Promise<ApiResponse<{ customer: Customer }>> => {
+    const response = await api.get(`/customers/${id}`);
+    return response.data;
+  },
 };
 
 //Vendors endpoints

@@ -3,6 +3,7 @@ import { customersAPI } from '../utils/api';
 import { Customer } from '../types';
 import Alert from '../components/Alert';
 import Loading from '../components/Loading';
+import { useNavigate } from 'react-router-dom';
 
 type CustomerForm = {
   name: string;
@@ -35,6 +36,8 @@ export default function Customers() {
   useEffect(() => {
     loadCustomers();
   }, [showInactive]);
+
+  const navigate = useNavigate();
 
   const loadCustomers = async () => {
     try {
@@ -123,84 +126,6 @@ export default function Customers() {
         <p className="text-gray-600">Manage customer records</p>
       </div>
 
-      {/* FORM */}
-      <div className="bg-white rounded-lg shadow p-6 mb-8">
-        {error && <Alert type="error">{error}</Alert>}
-        {success && <Alert type="success">{success}</Alert>}
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium mb-2">Name *</label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              required
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">Type *</label>
-            <input
-                type="text"
-                value={formData.type}
-                onChange={(e) =>
-                    setFormData({
-                    ...formData,
-                    type: e.target.value as CustomerForm['type']
-                    })
-                }
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
-                />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">Contact Info</label>
-            <textarea
-              value={formData.contact_info}
-              onChange={(e) =>
-                setFormData({ ...formData, contact_info: e.target.value })
-              }
-              rows={3}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">Address</label>
-            <textarea
-              value={formData.address}
-              onChange={(e) =>
-                setFormData({ ...formData, address: e.target.value })
-              }
-              rows={3}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
-            />
-          </div>
-
-          <div className="flex gap-3">
-            <button
-              type="submit"
-              disabled={submitting}
-              className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-secondary disabled:opacity-50"
-            >
-              {editingCustomer ? 'Update Customer' : 'Add Customer'}
-            </button>
-
-            {editingCustomer && (
-              <button
-                type="button"
-                onClick={resetForm}
-                className="px-6 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
-              >
-                Cancel
-              </button>
-            )}
-          </div>
-        </form>
-      </div>
-
       <div className="flex items-center gap-2 mb-4">
         <input
             type="checkbox"
@@ -243,9 +168,14 @@ export default function Customers() {
                   >
                   <td className="px-6 py-4 text-sm font-medium">
                     <div className="flex items-center gap-2">
-                      <span className={!customer.is_active ? 'text-gray-500' : 'text-gray-900'}>
+                      <button
+                        onClick={() => navigate(`/customers/${customer.id}`)}
+                        className={`text-left hover:underline ${
+                          !customer.is_active ? 'text-gray-500' : 'text-blue-600'
+                        }`}
+                      >
                         {customer.name}
-                      </span>
+                      </button>
 
                       {!customer.is_active && (
                         <span className="px-2 py-0.5 text-xs bg-gray-300 text-gray-700 rounded">

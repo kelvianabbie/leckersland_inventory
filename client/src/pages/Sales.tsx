@@ -31,7 +31,7 @@ export default function Sales() {
   const [paymentHistory, setPaymentHistory] = useState<any[]>([]);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
-  const [price, setPrice] = useState<string>(''); // string so empty is allowed
+  const [price, setPrice] = useState<string>(''); // string empty is allowed
 
   // Filter state
   const [statusFilter, setStatusFilter] = useState<SaleStatus>('all');

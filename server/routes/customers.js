@@ -116,4 +116,28 @@ router.put('/:id/reactivate', async (req, res) => {
   }
 });
 
+router.get('/:id', async (req, res) => {
+  try {
+    const customer = await require('../models/Customer').findByPk(req.params.id);
+
+    if (!customer) {
+      return res.status(404).json({
+        success: false,
+        error: 'Customer not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: { customer }
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;
