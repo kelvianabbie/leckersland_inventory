@@ -102,32 +102,6 @@ export default function CustomerDetail() {
         </div>
       </div>
 
-      <div className="flex gap-4 mb-4">
-        <select
-          value={month}
-          onChange={(e) => {
-            const val = e.target.value;
-            setMonth(val === 'all' ? 'all' : Number(val));
-            setPage(1);
-          }}
-          className="px-4 py-2 border rounded-lg"
-        >
-          <option value="all">All Months</option>
-          <option value="1">Jan</option>
-          <option value="2">Feb</option>
-          <option value="3">Mar</option>
-          <option value="4">Apr</option>
-          <option value="5">May</option>
-          <option value="6">Jun</option>
-          <option value="7">Jul</option>
-          <option value="8">Aug</option>
-          <option value="9">Sep</option>
-          <option value="10">Oct</option>
-          <option value="11">Nov</option>
-          <option value="12">Dec</option>
-        </select>
-      </div>
-
       {/* SALES */}
       <div className="bg-white rounded-lg shadow">
         <div className="p-6 border-b">
@@ -149,7 +123,7 @@ export default function CustomerDetail() {
               <option value="all">All Months</option>
               {[...Array(12)].map((_, i) => (
                 <option key={i + 1} value={i + 1}>
-                  {new Date(0, i).toLocaleString('default', { month: 'short' })}
+                  {new Date(0, i).toLocaleString('default', { month: 'long' })}
                 </option>
               ))}
             </select>
@@ -162,17 +136,17 @@ export default function CustomerDetail() {
               <table className="w-full min-w-[700px]">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs">ID</th>
-                    <th className="px-6 py-3 text-left text-xs">Date</th>
-                    <th className="px-6 py-3 text-left text-xs">Products</th>
-                    <th className="px-6 py-3 text-left text-xs">Total / Paid</th>
-                    <th className="px-6 py-3 text-left text-xs">Season</th>
-                    <th className="px-6 py-3 text-left text-xs">Completed</th>
-                    <th className="px-6 py-3 text-left text-xs">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Products</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total / Paid</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Season</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Completed</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                   </tr>
                 </thead>
 
-                <tbody className="divide-y">
+                <tbody className="divide-y divide-gray-200">
                   {sales.map((sale) => {
                     const total = sale.items.reduce(
                       (sum, item) => sum + item.quantity * item.unit_price,
@@ -180,14 +154,17 @@ export default function CustomerDetail() {
                     );
 
                     return (
-                      <tr key={sale.id}>
-                        <td className="px-6 py-4">#{sale.id}</td>
+                      <tr key={sale.id} className="hover:bg-gray-50">
+                        
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
+                          #{sale.id}
+                        </td>
 
-                        <td className="px-6 py-4">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {new Date(sale.sale_date).toLocaleString()}
                         </td>
 
-                        <td className="px-6 py-4">
+                        <td className="px-6 py-4 text-sm text-gray-900">
                           {sale.items.map((item) => (
                             <div key={item.product_id}>
                               {item.product?.name} × {item.quantity}
@@ -195,22 +172,39 @@ export default function CustomerDetail() {
                           ))}
                         </td>
 
-                        <td className="px-6 py-4">
+                        <td className="px-6 py-4 text-sm font-medium text-primary">
                           ${total.toFixed(2)} / ${sale.total_paid?.toFixed(2) || '0.00'}
                         </td>
 
-                        <td className="px-6 py-4 capitalize">
-                          {sale.season}
+                        {/* Season badge */}
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            sale.season === 'spring' ? 'bg-emerald-100 text-emerald-800' :
+                            sale.season === 'summer' ? 'bg-blue-100 text-blue-800' :
+                            sale.season === 'fall' ? 'bg-orange-100 text-orange-800' :
+                            'bg-purple-100 text-purple-800'
+                          }`}>
+                            {sale.season.charAt(0).toUpperCase() + sale.season.slice(1)}
+                          </span>
                         </td>
 
-                        <td className="px-6 py-4">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {sale.completed_date
                             ? new Date(sale.completed_date).toLocaleString()
-                            : '-'}
+                            : <span className="text-gray-400 italic">Not completed yet</span>}
                         </td>
 
-                        <td className="px-6 py-4 capitalize">
-                          {sale.status}
+                        {/* Status badge */}
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            sale.status === 'pending'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : sale.status === 'completed'
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}>
+                            {sale.status.charAt(0).toUpperCase() + sale.status.slice(1)}
+                          </span>
                         </td>
                       </tr>
                     );
