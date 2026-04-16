@@ -75,7 +75,7 @@ export default function EditCustomer() {
 
       // Redirect back to detail page
       setTimeout(() => {
-        navigate(`/customers/${id}`);
+        navigate(`/customers`);
       }, 800);
 
     } catch (err: any) {
