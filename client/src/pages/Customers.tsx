@@ -5,13 +5,6 @@ import Alert from '../components/Alert';
 import Loading from '../components/Loading';
 import { useNavigate } from 'react-router-dom';
 
-type CustomerForm = {
-  name: string;
-  type: string;
-  contact_info?: string;
-  address?: string;
-};
-
 type ConfirmAction = {
   id: number;
   action: 'deactivate' | 'reactivate';
@@ -20,15 +13,7 @@ type ConfirmAction = {
 export default function Customers() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
   const [showInactive, setShowInactive] = useState(false);
-  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
-  const [formData, setFormData] = useState<CustomerForm>({
-    name: '',
-    type: '',
-    contact_info: '',
-    address: ''
-  });
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null);
@@ -52,51 +37,6 @@ export default function Customers() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      type: '',
-      contact_info: '',
-      address: ''
-    });
-    setEditingCustomer(null);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-    setError(null);
-    setSuccess(null);
-
-    try {
-      if (editingCustomer) {
-        await customersAPI.update(editingCustomer.id, formData);
-        setSuccess('Customer updated successfully');
-      } else {
-        await customersAPI.create(formData);
-        setSuccess('Customer added successfully');
-      }
-
-      resetForm();
-      await loadCustomers();
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Operation failed');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleEdit = (customer: Customer) => {
-    setEditingCustomer(customer);
-    setFormData({
-      name: customer.name,
-      type: customer.type,
-      contact_info: customer.contact_info || '',
-      address: customer.address || ''
-    });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleConfirm = async () => {
@@ -207,7 +147,7 @@ export default function Customers() {
                   </td>
                   <td className="px-6 py-4 text-sm flex gap-2">
                     <button
-                      onClick={() => handleEdit(customer)}
+                      onClick={() => navigate(`/customers/${customer.id}/edit`)}
                       className="px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
                     >
                       Edit

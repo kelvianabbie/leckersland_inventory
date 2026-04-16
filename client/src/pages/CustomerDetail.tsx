@@ -44,7 +44,7 @@ export default function CustomerDetail() {
       {/* HEADER */}
       <div>
         <h1 className="text-2xl font-bold">👤 {customer.name}</h1>
-        <p className="text-gray-600">Customer details & activity</p>
+        <p className="text-gray-600">Customer details</p>
       </div>
 
       {error && <Alert type="error">{error}</Alert>}

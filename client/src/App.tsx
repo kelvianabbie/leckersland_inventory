@@ -13,6 +13,7 @@ import Login from './pages/Login';
 import Vendors from './pages/Vendors';
 import AddCustomer from './pages/AddCustomer';
 import CustomerDetail from './pages/CustomerDetail';
+import EditCustomer from './pages/EditCustomer';
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const token = localStorage.getItem('token');
@@ -45,8 +46,9 @@ function App() {
           <Route path="analytics" element={<Analytics />} />
           <Route path="orders" element={<Orders />} />
           <Route path="customers" element={<Customers />} />
-          <Route path="customers/new" element={<AddCustomer />} />
+          <Route path="customers/add" element={<AddCustomer />} />
           <Route path="customers/:id" element={<CustomerDetail />} />
+          <Route path="/customers/:id/edit" element={<EditCustomer />} />
           <Route path="vendors" element={<Vendors />} />
         </Route>
       </Routes>
