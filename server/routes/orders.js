@@ -108,7 +108,9 @@ router.get('/', async (req, res) => {
       }
     }
 
-    const formattedOrders = Object.values(orderMap);
+    const formattedOrders = Object.values(orderMap).sort(
+      (a, b) => new Date(b.created_at) - new Date(a.created_at)
+    );
 
     res.json({
       success: true,
