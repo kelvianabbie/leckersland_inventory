@@ -3,12 +3,7 @@ import { vendorsAPI } from '../utils/api';
 import { Vendor } from '../types';
 import Alert from '../components/Alert';
 import Loading from '../components/Loading';
-
-type VendorForm = {
-  name: string;
-  contact_info?: string;
-  address?: string;
-};
+import { useNavigate } from 'react-router-dom';
 
 type ConfirmAction = {
   id: number;
@@ -18,14 +13,7 @@ type ConfirmAction = {
 export default function Vendors() {
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
   const [showInactive, setShowInactive] = useState(false);
-  const [editingVendor, setEditingVendor] = useState<Vendor | null>(null);
-  const [formData, setFormData] = useState<VendorForm>({
-    name: '',
-    contact_info: '',
-    address: ''
-  });
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null);
@@ -49,48 +37,7 @@ export default function Vendors() {
     }
   };
 
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      contact_info: '',
-      address: ''
-    });
-    setEditingVendor(null);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-    setError(null);
-    setSuccess(null);
-
-    try {
-      if (editingVendor) {
-        await vendorsAPI.update(editingVendor.id, formData);
-        setSuccess('Vendor updated successfully');
-      } else {
-        await vendorsAPI.create(formData);
-        setSuccess('Vendor added successfully');
-      }
-
-      resetForm();
-      await loadVendors();
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Operation failed');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleEdit = (vendor: Vendor) => {
-    setEditingVendor(vendor);
-    setFormData({
-      name: vendor.name,
-      contact_info: vendor.contact_info || '',
-      address: vendor.address || ''
-    });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  const navigate = useNavigate();
 
   const handleConfirm = async () => {
     if (!confirmAction) return;
@@ -114,72 +61,18 @@ export default function Vendors() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">🏭 Vendors</h1>
-        <p className="text-gray-600">Manage vendor records</p>
-      </div>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold mb-2">🏭 Vendors</h1>
+          <p className="text-gray-600">Manage vendor records</p>
+        </div>
 
-      {/* FORM */}
-      <div className="bg-white rounded-lg shadow p-6 mb-8">
-        {error && <Alert type="error">{error}</Alert>}
-        {success && <Alert type="success">{success}</Alert>}
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium mb-2">Name *</label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              required
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">Contact Info</label>
-            <textarea
-              value={formData.contact_info}
-              onChange={(e) =>
-                setFormData({ ...formData, contact_info: e.target.value })
-              }
-              rows={3}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">Address</label>
-            <textarea
-              value={formData.address}
-              onChange={(e) =>
-                setFormData({ ...formData, address: e.target.value })
-              }
-              rows={3}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
-            />
-          </div>
-
-          <div className="flex gap-3">
-            <button
-              type="submit"
-              disabled={submitting}
-              className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-secondary disabled:opacity-50"
-            >
-              {editingVendor ? 'Update Vendor' : 'Add Vendor'}
-            </button>
-
-            {editingVendor && (
-              <button
-                type="button"
-                onClick={resetForm}
-                className="px-6 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
-              >
-                Cancel
-              </button>
-            )}
-          </div>
-        </form>
+        <button
+          onClick={() => navigate('/vendors/add')}
+          className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary"
+        >
+          ➕ Add Vendor
+        </button>
       </div>
 
       <div className="flex items-center gap-2 mb-4">
@@ -224,7 +117,14 @@ export default function Vendors() {
                   <td className="px-6 py-4 text-sm font-medium">
                     <div className="flex items-center gap-2">
                       <span className={!vendor.is_active ? 'text-gray-500' : 'text-gray-900'}>
-                        {vendor.name}
+                        <button
+                          onClick={() => navigate(`/vendors/${vendor.id}`)}
+                          className={`text-left hover:underline ${
+                            !vendor.is_active ? 'text-gray-500' : 'text-blue-600'
+                          }`}
+                        >
+                          {vendor.name}
+                        </button>
                       </span>
 
                       {!vendor.is_active && (
@@ -245,7 +145,7 @@ export default function Vendors() {
                   </td>
                   <td className="px-6 py-4 text-sm flex gap-2">
                     <button
-                      onClick={() => handleEdit(vendor)}
+                      onClick={() => navigate(`/vendors/${vendor.id}/edit`)}
                       className="px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
                     >
                       Edit

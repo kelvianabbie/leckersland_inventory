@@ -8,21 +8,40 @@ const Product = require('../models/Product');
 //get all purchase orders
 router.get('/', async (req, res) => {
   try {
-    const { status, limit = 20, page = 1 } = req.query;
+    const { status, limit = 20, page = 1, vendor_id, month } = req.query;
+
     const parsedLimit = parseInt(limit);
     const parsedPage = parseInt(page);
     const offset = (parsedPage - 1) * parsedLimit;
-    
-    let whereClause = '';
+
+    let whereConditions = [];
     let replacements = {
       limit: parsedLimit,
       offset
     };
-    
+
+    // ✅ Status filter
     if (status) {
-      whereClause += ' WHERE po.status = :status';
+      whereConditions.push('po.status = :status');
       replacements.status = status;
     }
+
+    // ✅ Vendor filter
+    if (vendor_id) {
+      whereConditions.push('po.vendor_id = :vendor_id');
+      replacements.vendor_id = parseInt(vendor_id);
+    }
+
+    // ✅ Month filter (based on created_at)
+    if (month) {
+      whereConditions.push('EXTRACT(MONTH FROM po.created_at) = :month');
+      replacements.month = parseInt(month);
+    }
+
+    const whereClause =
+      whereConditions.length > 0
+        ? `WHERE ${whereConditions.join(' AND ')}`
+        : '';
 
     const orders = await sequelize.query(`
       SELECT 
@@ -40,10 +59,9 @@ router.get('/', async (req, res) => {
         p.sku
       FROM (
         SELECT *
-        FROM purchase_orders
-        WHERE 1=1
-          ${status ? 'AND status = :status' : ''}
-        ORDER BY created_at DESC
+        FROM purchase_orders po
+        ${whereClause}
+        ORDER BY po.created_at DESC
         LIMIT :limit
         OFFSET :offset
       ) po
@@ -56,7 +74,7 @@ router.get('/', async (req, res) => {
       type: sequelize.QueryTypes.SELECT
     });
 
-    //transform the flat result into nested objects
+    // ✅ Transform flat → nested
     const orderMap = {};
 
     for (const row of orders) {
@@ -90,9 +108,7 @@ router.get('/', async (req, res) => {
       }
     }
 
-    const formattedOrders = Object.values(orderMap).sort(
-      (a, b) => new Date(b.created_at) - new Date(a.created_at)
-    );
+    const formattedOrders = Object.values(orderMap);
 
     res.json({
       success: true,
@@ -102,6 +118,7 @@ router.get('/', async (req, res) => {
         limit: parsedLimit
       }
     });
+
   } catch (error) {
     console.error('Orders GET error:', error);
     res.status(500).json({ success: false, error: error.message });

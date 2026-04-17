@@ -162,12 +162,17 @@ export const vendorsAPI = {
   deactivate: (id: number) =>
     api.put(`/vendors/${id}/deactivate`),
   reactivate: (id: number) =>
-    api.put(`/vendors/${id}/reactivate`)
+    api.put(`/vendors/${id}/reactivate`),
+  getById: async (id: number): 
+    Promise<ApiResponse<{ vendor: Vendor }>> => {
+    const response = await api.get(`/vendors/${id}`);
+    return response.data;
+  },
 };
 
 //Orders endpoints
 export const ordersAPI = {
-  getAll: async (params: { status?: string; limit?: number; page?: number } = {}): 
+  getAll: async (params: { status?: string; limit?: number; page?: number; vendor_id?: number; month?: number } = {}): 
     Promise<ApiResponse<{ orders: PurchaseOrder[] }>> => {
     const response = await api.get('/orders', { params });
     return response.data;

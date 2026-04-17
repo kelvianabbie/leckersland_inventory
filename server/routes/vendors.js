@@ -119,4 +119,37 @@ router.put('/:id/reactivate', async (req, res) => {
   }
 });
 
+router.get('/:id', async (req, res) => {
+  try {
+    const vendor = await Vendor.findByPk(req.params.id, {
+      attributes: [
+        'id',
+        'name',
+        'address',
+        ['contact_info', 'contact_info'],
+        'created_at',
+        ['is_active', 'is_active']
+      ]
+    });
+
+    if (!vendor) {
+      return res.status(404).json({
+        success: false,
+        error: 'Vendor not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: { vendor }
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;
