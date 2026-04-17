@@ -32,9 +32,6 @@ export default function VendorDetail() {
 
       const res = await vendorsAPI.getById(vendorId);
       setVendor(res.data?.vendor || null);
-
-      await loadOrders();
-
     } catch {
       setError('Failed to load vendor');
     } finally {
@@ -69,15 +66,47 @@ export default function VendorDetail() {
   }
 
   return (
-    <div>
+    <div className="space-y-6">
       {/* Vendor Info */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">{vendor.name}</h1>
-        <p className="text-gray-600">{vendor.contact_info || '-'}</p>
-        <p className="text-gray-600">{vendor.address || '-'}</p>
+      <div>
+        <h1 className="text-2xl font-bold">🏭 {vendor.name}</h1>
+        <p className="text-gray-600">Vendor details</p>
       </div>
 
       {error && <Alert type="error">{error}</Alert>}
+
+      {/* VENDOR INFO CARD */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <h2 className="text-lg font-semibold mb-4">Vendor Information</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <p className="text-gray-500">Name</p>
+            <p className="font-medium">{vendor.name}</p>
+          </div>
+          <div>
+            <p className="text-gray-500">Status</p>
+            <p>
+              {vendor.is_active ? (
+                <span className="text-green-600 font-medium">Active</span>
+              ) : (
+                <span className="text-gray-500">Inactive</span>
+              )}
+            </p>
+          </div>
+          <div>
+            <p className="text-gray-500">Contact</p>
+            <p>{vendor.contact_info || '-'}</p>
+          </div>
+          <div>
+            <p className="text-gray-500">Created</p>
+            <p>{new Date(vendor.created_at).toLocaleDateString()}</p>
+          </div>
+          <div className="md:col-span-2">
+            <p className="text-gray-500">Address</p>
+            <p>{vendor.address || '-'}</p>
+          </div>
+        </div>
+      </div>
 
       {/* Filters */}
       <div className="mb-4 flex gap-3 items-center">
@@ -105,7 +134,7 @@ export default function VendorDetail() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[700px]">
+          <table className="w-full min-w-[700px] text-sm">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date Created</th>
@@ -118,42 +147,37 @@ export default function VendorDetail() {
             <tbody className="divide-y divide-gray-200">
               {orders.map(order => (
                 <tr key={order.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 text-sm text-gray-600">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                     {formatDate(order.created_at)}
                   </td>
-                  <td className="px-6 py-4 text-sm">
+                  <td className="px-6 py-4 text-sm text-gray-900">
                     <div className="space-y-1">
                       {order.items.map(i => (
-                        <div key={i.product_id} className="flex justify-between">
-                          <span className="font-medium text-gray-800">
-                            {i.product?.name}
-                          </span>
-                          <span className="text-gray-500">
-                            × {i.quantity}
+                        <div key={i.product_id}>
+                          <span className="font-medium text-gray-900">
+                            {i.product?.name} × {i.quantity}
                           </span>
                         </div>
                       ))}
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                     {formatDate(order.ordered_date)}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                     {formatDate(order.received_date)}
                   </td>
                   <td className="px-6 py-4 text-sm">
-                    <span
-                      className={`px-2 py-1 rounded text-xs font-medium ${
-                        order.status === 'received'
-                          ? 'bg-green-100 text-green-700'
-                          : order.status === 'ordered'
-                          ? 'bg-blue-100 text-blue-700'
-                          : order.status === 'pending'
-                          ? 'bg-yellow-100 text-yellow-700'
-                          : 'bg-red-100 text-red-700'
-                      }`}
-                    >
-                      {order.status}
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      order.status === 'received'
+                        ? 'bg-green-100 text-green-800'
+                        : order.status === 'ordered'
+                        ? 'bg-blue-100 text-blue-800'
+                        : order.status === 'pending'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                     </span>
                   </td>
                 </tr>
