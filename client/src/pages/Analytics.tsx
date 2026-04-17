@@ -171,7 +171,7 @@ export default function Analytics() {
 
         {/* Sales by Category */}
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold mb-4">Sales by Category</h2>
+          <h2 className="text-lg font-semibold mb-4">Sales by Brand</h2>
           <div className="space-y-3 max-h-96 overflow-y-auto">
             {categoryData.map(([category, total]) => {
               const percent = ((total as number) / maxCategorySales) * 100;
@@ -421,7 +421,7 @@ export default function Analytics() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Brand</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sold This Season</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Current Stock</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>

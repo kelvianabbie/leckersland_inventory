@@ -21,6 +21,20 @@ export default function Layout() {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  const getPageTitle = () => {
+    const path = location.pathname;
+
+    // Exact match for dashboard only
+    if (path === '/') return 'Dashboard';
+
+    // Match other routes by prefix
+    const match = navigation.find(n =>
+      n.href !== '/' && path.startsWith(n.href)
+    );
+
+    return match?.name || 'Dashboard';
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
 
@@ -79,7 +93,7 @@ export default function Layout() {
               </button>
 
               <h2 className="text-lg md:text-xl font-semibold text-gray-800">
-                {navigation.find(n => n.href === location.pathname)?.name || 'Dashboard'}
+                {getPageTitle()}
               </h2>
             </div>
 
