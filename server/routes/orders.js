@@ -68,7 +68,7 @@ router.get('/', async (req, res) => {
       LEFT JOIN vendors v ON po.vendor_id = v.id
       LEFT JOIN purchase_order_items poi ON poi.purchase_order_id = po.id
       LEFT JOIN products p ON poi.product_id = p.id
-      ORDER BY po.created_at DESC
+      ORDER BY po.created_at DESC, po.id DESC
     `, {
       replacements,
       type: sequelize.QueryTypes.SELECT

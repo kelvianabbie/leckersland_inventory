@@ -108,29 +108,28 @@ export default function VendorDetail() {
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="mb-4 flex gap-3 items-center">
-        <select
-          value={month}
-          onChange={(e) => {
-            setMonth(e.target.value ? Number(e.target.value) : '');
-            setPage(1);
-          }}
-          className="px-4 py-2 border rounded-lg"
-        >
-          <option value="">All Months</option>
-          {Array.from({ length: 12 }, (_, i) => (
-            <option key={i} value={i + 1}>
-              {new Date(0, i).toLocaleString('default', { month: 'long' })}
-            </option>
-          ))}
-        </select>
-      </div>
-
       {/* Order Table */}
       <div className="bg-white rounded-lg shadow">
         <div className="p-6 border-b">
           <h2 className="text-lg font-semibold">Order History</h2>
+        </div>
+
+        <div className="p-6 border-b">
+          <select
+            value={month}
+            onChange={(e) => {
+              setMonth(e.target.value ? Number(e.target.value) : '');
+              setPage(1);
+            }}
+            className="px-4 py-2 border rounded-lg"
+          >
+            <option value="">All Months</option>
+            {Array.from({ length: 12 }, (_, i) => (
+              <option key={i} value={i + 1}>
+                {new Date(0, i).toLocaleString('default', { month: 'long' })}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="overflow-x-auto">
@@ -151,15 +150,11 @@ export default function VendorDetail() {
                     {formatDate(order.created_at)}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900">
-                    <div className="space-y-1">
                       {order.items.map(i => (
                         <div key={i.product_id}>
-                          <span className="font-medium text-gray-900">
                             {i.product?.name} × {i.quantity}
-                          </span>
                         </div>
                       ))}
-                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                     {formatDate(order.ordered_date)}

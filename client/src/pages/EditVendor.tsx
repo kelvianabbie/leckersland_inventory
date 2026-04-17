@@ -68,36 +68,50 @@ export default function EditVendor() {
         {error && <Alert type="error">{error}</Alert>}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <input
-            required
-            placeholder="Name"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            className="w-full px-4 py-2 border rounded-lg"
-          />
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Name *
+            </label>
+            <input
+              required
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+            />
+          </div>
 
-          <textarea
-            placeholder="Contact Info"
-            value={formData.contact_info}
-            onChange={(e) =>
-              setFormData({ ...formData, contact_info: e.target.value })
-            }
-            className="w-full px-4 py-2 border rounded-lg"
-          />
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Contact Info
+            </label>
+            <textarea
+              rows={3}
+              value={formData.contact_info}
+              onChange={(e) =>
+                setFormData({ ...formData, contact_info: e.target.value })
+              }
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+            />
+          </div>
 
-          <textarea
-            placeholder="Address"
-            value={formData.address}
-            onChange={(e) =>
-              setFormData({ ...formData, address: e.target.value })
-            }
-            className="w-full px-4 py-2 border rounded-lg"
-          />
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Address
+            </label>
+            <textarea
+              rows={3}
+              value={formData.address}
+              onChange={(e) =>
+                setFormData({ ...formData, address: e.target.value })
+              }
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+            />
+          </div>
 
           <div className="flex gap-3">
             <button
               disabled={submitting}
-              className="px-6 py-2 bg-primary text-white rounded-lg"
+              className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-secondary disabled:opacity-50"
             >
               {submitting ? 'Saving...' : 'Update Vendor'}
             </button>
@@ -105,7 +119,7 @@ export default function EditVendor() {
             <button
               type="button"
               onClick={() => navigate(`/vendors`)}
-              className="px-6 py-2 bg-gray-200 rounded-lg"
+              className="px-6 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
             >
               Cancel
             </button>
