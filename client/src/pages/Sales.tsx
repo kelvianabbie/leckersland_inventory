@@ -4,6 +4,7 @@ import { Sale, Customer, InventoryItem, SaleCreate, Season } from '../types';
 import Loading from '../components/Loading';
 import Alert from '../components/Alert';
 import ConfirmModal from '../components/ConfirmModal';
+import { useNavigate } from 'react-router-dom';
 
 type SaleStatus = 'all' | 'pending' | 'completed' | 'cancelled';
 
@@ -88,6 +89,8 @@ export default function Sales() {
       setLoading(false);
     }
   };
+
+  const navigate = useNavigate();
 
   const handleAddToCart = () => {
     if (!selectedProductId || quantity <= 0) return;
@@ -242,10 +245,12 @@ export default function Sales() {
       const sale = sales.find(s => s.id === paymentSaleId);
 
       if (sale) {
-        const total = sale.items.reduce(
+        const subtotal = sale.items.reduce(
           (sum, item) => sum + item.quantity * item.unit_price,
           0
         );
+
+        const total = subtotal - (sale.credit_memo || 0);
 
         if ((sale.total_paid || 0) + paymentAmount > total) {
           setError('Payment exceeds total sale price');
@@ -649,15 +654,17 @@ export default function Sales() {
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {filteredSales.map((sale) => {
-                  const total = sale.items.reduce(
+                  const subtotal = sale.items.reduce(
                     (sum, item) => sum + item.quantity * item.unit_price,
                     0
                   );
 
+                  const total = subtotal - (sale.credit_memo || 0);
+
                   return (
                     <tr key={sale.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 cursor-pointer"
-                          onClick={() => setInvoiceSaleId(sale.id)}
+                          onClick={() => navigate(`/sales/${sale.id}`)}
                       >
                       #{sale.id}
                     </td>

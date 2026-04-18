@@ -138,6 +138,7 @@ router.get('/', async (req, res) => {
         s.status,
         s.completed_date,
         s.ref,
+        s.credit_memo,
         c.id as customer_id_join,
         c.name as customer_name,
         c.type as customer_type,
@@ -192,6 +193,7 @@ router.get('/', async (req, res) => {
           status: row.status,
           completed_date: row.completed_date,
           ref: row.ref,
+          credit_memo: parseFloat(row.credit_memo || 0),
           customer: row.customer_id_join ? {
             id: row.customer_id_join,
             name: row.customer_name,
@@ -303,6 +305,121 @@ router.put('/:id/status', async (req, res) => {
     await t.rollback();
     console.error('Error updating sale status:', error);
     res.status(500).json({ message: 'Failed to update sale status' });
+  }
+});
+
+// PUT /sales/:id/credit-memo
+router.put('/:id/credit-memo', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { credit_memo } = req.body;
+
+    const sale = await Sale.findByPk(id);
+
+    if (!sale) {
+      return res.status(404).json({ success: false, error: 'Sale not found' });
+    }
+
+    if (credit_memo < 0) {
+      return res.status(400).json({ success: false, error: 'Invalid credit memo' });
+    }
+
+    sale.creditMemo = credit_memo;
+    await sale.save();
+
+    res.json({
+      success: true,
+      data: { sale }
+    });
+
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Get single sale detail
+router.get('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const rows = await sequelize.query(`
+      SELECT 
+        s.id,
+        s.customer_id,
+        s.sale_date,
+        s.season,
+        s.status,
+        s.completed_date,
+        s.ref,
+        s.credit_memo,
+        c.id as customer_id_join,
+        c.name as customer_name,
+        c.type as customer_type,
+        si.product_id,
+        si.quantity,
+        si.unit_price,
+        p.name as product_name,
+        p.sku,
+        COALESCE(pay.total_paid, 0) as total_paid
+      FROM sales s
+      LEFT JOIN customers c ON s.customer_id = c.id
+      LEFT JOIN sale_items si ON si.sale_id = s.id
+      LEFT JOIN products p ON si.product_id = p.id
+      LEFT JOIN (
+        SELECT sale_id, SUM(amount) as total_paid
+        FROM payments
+        GROUP BY sale_id
+      ) pay ON pay.sale_id = s.id
+      WHERE s.id = :id
+    `, {
+      replacements: { id },
+      type: QueryTypes.SELECT
+    });
+
+    if (!rows.length) {
+      return res.status(404).json({ success: false, error: 'Sale not found' });
+    }
+
+    const sale = {
+      id: rows[0].id,
+      customer_id: rows[0].customer_id,
+      sale_date: rows[0].sale_date,
+      season: rows[0].season,
+      status: rows[0].status,
+      completed_date: rows[0].completed_date,
+      ref: rows[0].ref,
+      credit_memo: parseFloat(rows[0].credit_memo || 0),
+      total_paid: parseFloat(rows[0].total_paid || 0),
+      customer: rows[0].customer_id_join ? {
+        id: rows[0].customer_id_join,
+        name: rows[0].customer_name,
+        type: rows[0].customer_type
+      } : null,
+      items: []
+    };
+
+    rows.forEach(row => {
+      if (row.product_id) {
+        sale.items.push({
+          product_id: row.product_id,
+          quantity: row.quantity,
+          unit_price: parseFloat(row.unit_price),
+          product: {
+            id: row.product_id,
+            name: row.product_name,
+            sku: row.sku
+          }
+        });
+      }
+    });
+
+    res.json({
+      success: true,
+      data: { sale }
+    });
+
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 

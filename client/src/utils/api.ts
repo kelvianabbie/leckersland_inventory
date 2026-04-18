@@ -118,6 +118,10 @@ export const salesAPI = {
     const response = await api.get('/sales/summary/customer-type');
     return response.data;
   },
+  getById: async (id: number): Promise<ApiResponse<{ sale: Sale }>> => {
+    const response = await api.get(`/sales/${id}`);
+    return response.data;
+  },
 };
 
 //Customers endpoints

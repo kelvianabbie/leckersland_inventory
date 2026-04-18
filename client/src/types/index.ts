@@ -70,6 +70,7 @@ export interface Sale {
   status: 'pending' | 'completed' | 'cancelled';
   completed_date?: string | null;
   ref?: string;
+  credit_memo?: number;
   customer?: Customer;
   items: SaleItem[];
   total_paid?: number;

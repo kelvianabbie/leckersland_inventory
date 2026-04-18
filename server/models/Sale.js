@@ -28,6 +28,11 @@ const Sale = sequelize.define('Sale', {
   ref: {
     type: DataTypes.STRING,
     allowNull: true
+  },
+  creditMemo: {
+    type: DataTypes.DECIMAL(12,2),
+    field: 'credit_memo',
+    defaultValue: 0
   }
 }, {
   tableName: 'sales',

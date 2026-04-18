@@ -17,6 +17,7 @@ import EditCustomer from './pages/EditCustomer';
 import AddVendor from './pages/AddVendor';
 import VendorDetail from './pages/VendorDetail';
 import EditVendor from './pages/EditVendor';
+import SaleDetail from './pages/SaleDetail';
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const token = localStorage.getItem('token');
@@ -46,6 +47,7 @@ function App() {
           <Route path="inventory/add" element={<AddProduct />} />
           <Route path="products/:id/edit" element={<EditProduct />} />
           <Route path="sales" element={<Sales />} />
+          <Route path="sales/:id" element={<SaleDetail />} />
           <Route path="analytics" element={<Analytics />} />
           <Route path="orders" element={<Orders />} />
           <Route path="customers" element={<Customers />} />
