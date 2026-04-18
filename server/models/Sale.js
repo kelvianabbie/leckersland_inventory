@@ -24,6 +24,10 @@ const Sale = sequelize.define('Sale', {
     type: DataTypes.DATE,
     field: 'completed_date',
     allowNull: true
+  },
+  ref: {
+    type: DataTypes.STRING,
+    allowNull: true
   }
 }, {
   tableName: 'sales',

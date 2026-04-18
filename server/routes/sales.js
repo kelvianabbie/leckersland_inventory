@@ -12,7 +12,7 @@ router.post('/', async (req, res) => {
   const t = await sequelize.transaction();
 
   try {
-    const { customer_id, sale_date, items } = req.body;
+    const { customer_id, sale_date, items, ref } = req.body;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       await t.rollback();
@@ -55,7 +55,8 @@ router.post('/', async (req, res) => {
       customerId: customer_id,
       saleDate,
       season,
-      status: 'pending'
+      status: 'pending',
+      ref
     }, { transaction: t });
 
     // 3️⃣ Insert sale items
@@ -136,6 +137,7 @@ router.get('/', async (req, res) => {
         s.season,
         s.status,
         s.completed_date,
+        s.ref,
         c.id as customer_id_join,
         c.name as customer_name,
         c.type as customer_type,
@@ -189,6 +191,7 @@ router.get('/', async (req, res) => {
           season: row.season,
           status: row.status,
           completed_date: row.completed_date,
+          ref: row.ref,
           customer: row.customer_id_join ? {
             id: row.customer_id_join,
             name: row.customer_name,

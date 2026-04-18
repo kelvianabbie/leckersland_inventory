@@ -69,6 +69,7 @@ export interface Sale {
   season: string;
   status: 'pending' | 'completed' | 'cancelled';
   completed_date?: string | null;
+  ref?: string;
   customer?: Customer;
   items: SaleItem[];
   total_paid?: number;
@@ -82,6 +83,7 @@ export interface SaleCreateItem {
 export interface SaleCreate {
   customer_id: number;
   sale_date?: string;
+  ref?: string;
   items: SaleCreateItem[];
 }
 

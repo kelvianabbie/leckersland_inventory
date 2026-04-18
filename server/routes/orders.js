@@ -20,19 +20,16 @@ router.get('/', async (req, res) => {
       offset
     };
 
-    // ✅ Status filter
     if (status) {
       whereConditions.push('po.status = :status');
       replacements.status = status;
     }
 
-    // ✅ Vendor filter
     if (vendor_id) {
       whereConditions.push('po.vendor_id = :vendor_id');
       replacements.vendor_id = parseInt(vendor_id);
     }
 
-    // ✅ Month filter (based on created_at)
     if (month) {
       whereConditions.push('EXTRACT(MONTH FROM po.created_at) = :month');
       replacements.month = parseInt(month);

@@ -32,6 +32,7 @@ export default function Sales() {
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [price, setPrice] = useState<string>(''); // string empty is allowed
+  const [ref, setRef] = useState<string>('');
 
   // Filter state
   const [statusFilter, setStatusFilter] = useState<SaleStatus>('all');
@@ -139,6 +140,7 @@ export default function Sales() {
       await salesAPI.create({
         customer_id: selectedCustomer,
         sale_date: saleDate || undefined,
+        ref: ref || undefined,
         items: cart.map(item => ({
           product_id: item.product_id,
           quantity: item.quantity,
@@ -150,6 +152,7 @@ export default function Sales() {
       setCart([]);
       setSelectedCustomer(0);
       setSaleDate('');
+      setRef('');
       await loadData();
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to record sale');
@@ -421,6 +424,17 @@ export default function Sales() {
             <p className="text-xs text-gray-500 mt-1">Leave empty to record sale at current time</p>
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Ref</label>
+            <input
+              type="text"
+              value={ref}
+              onChange={(e) => setRef(e.target.value)}
+              placeholder="e.g. PO-123, WhatsApp order, etc."
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+            />
+          </div>
+
           <button
             type="submit"
             disabled={submitting}
@@ -607,33 +621,6 @@ export default function Sales() {
               }`}
             >
               Winter
-            </button>
-          </div>
-        </div>
-
-        {/* Download Invoice by Sale ID */}
-        <div className="bg-gray-50 border rounded-lg p-4">
-          <div className="flex flex-col md:flex-row md:items-center gap-3">
-            
-            <span className="text-sm font-medium text-gray-700">
-              Download Invoice for Sale ID:
-            </span>
-
-            <input
-              type="number"
-              value={invoiceSaleId}
-              onChange={(e) =>
-                setInvoiceSaleId(e.target.value ? parseInt(e.target.value) : '')
-              }
-              placeholder="Enter Sale ID"
-              className="px-3 py-2 border rounded-lg w-full md:w-48"
-            />
-
-            <button
-              onClick={handleDownloadInvoice}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              Download Invoice
             </button>
           </div>
         </div>
