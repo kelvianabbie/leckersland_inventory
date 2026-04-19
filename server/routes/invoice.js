@@ -44,7 +44,7 @@ router.get('/:id', async (req, res) => {
 
     const fontRegular = path.join(__dirname, '../fonts/NotoSans-Regular.ttf');
     const fontBold = path.join(__dirname, '../fonts/NotoSans-Bold.ttf');
-    const fontCJK = path.join(__dirname, '../fonts/NotoSansCJK-Regular.ttc');
+    const fontCJK = path.join(__dirname, '../fonts/NotoSansCJKsc-Regular.otf');
 
     doc.registerFont('Custom', fontRegular);
     doc.registerFont('Custom-Bold', fontBold);
