@@ -302,6 +302,7 @@ router.get('/monthly-report', async (req, res) => {
 
     const now = new Date();
     const selectedMonth = parseInt(month) || (now.getMonth() + 1);
+    const selectedYear = now.getFullYear();
 
     // date range
     const startDate = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-01`;
