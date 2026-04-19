@@ -451,13 +451,6 @@ export default function Analytics() {
                 ${monthlyReport.expense}
               </div>
             </div>
-
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <div className="text-sm text-gray-600">Profit</div>
-              <div className="text-2xl font-bold text-blue-600">
-                ${monthlyReport.profit}
-              </div>
-            </div>
           </div>
         ) : (
           <div className="p-6 text-gray-500">
