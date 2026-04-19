@@ -261,13 +261,13 @@ router.get('/:id', async (req, res) => {
       TERMS + SIGNATURE SECTION
     ========================= */
 
-    let sectionY = y + 110;
+    let sectionY = y + 100;
 
     doc
       .font('Helvetica')
       .fontSize(10)
       .text(
-        'Warehouse Verification (Signature): _____________________________',
+        'Warehouse Verification (Signature): _________________________',
         50,
         sectionY
       )
@@ -297,7 +297,7 @@ router.get('/:id', async (req, res) => {
       .font('Helvetica')
       .fontSize(10)
       .text(
-        'Customer Signature: ____________________________________________',
+        'Customer Signature: ______________________________',
         50,
         sectionY
       )
