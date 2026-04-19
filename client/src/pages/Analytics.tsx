@@ -31,10 +31,13 @@ export default function Analytics() {
   const [biggestVendor, setBiggestVendor] = useState<any>(null);
   const [vendorProducts, setVendorProducts] = useState<any[]>([]);
   const [vendorMode, setVendorMode] = useState<'quantity' | 'expense'>('expense');
+  const [monthlyReport, setMonthlyReport] = useState<any>(null);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
   useEffect(() => {
     loadData();
-  }, [season, mode, vendorMode]);
+  }, [season, mode, vendorMode, selectedMonth, selectedYear]);
 
   const loadData = async () => {
     try {
@@ -46,14 +49,16 @@ export default function Analytics() {
         biggestRes,
         vendorRes,
         marginsRes,
-        profitRes
+        profitRes,
+        monthlyRes
       ] = await Promise.all([
         analyticsAPI.getTopSellers(season, 10),
         analyticsAPI.getReorderRecommendations(season),
         analyticsAPI.getBiggestCustomer(season, mode),
         analyticsAPI.getBiggestVendor(vendorMode),
         analyticsAPI.getTopMargins(10),
-        analyticsAPI.getTopProfit(season, 10)
+        analyticsAPI.getTopProfit(season, 10),
+        analyticsAPI.getMonthlyReport(selectedMonth, selectedYear)
       ]);
 
       setTopSellers(sellersRes.data?.results || []);
@@ -64,6 +69,7 @@ export default function Analytics() {
       setTopProfit(profitRes.data?.results || []);
       setBiggestVendor(vendorRes.data?.vendor || null);
       setVendorProducts(vendorRes.data?.products || []);
+      setMonthlyReport(monthlyRes.data?.data || null);
 
       setError(null);
     } catch (err) {
@@ -406,6 +412,66 @@ export default function Analytics() {
             </tbody>
           </table>
         </div>
+      </div>
+
+      <div className="bg-white rounded-lg shadow mb-8">
+        {/* HEADER */}
+        <div className="flex justify-between items-center p-6 border-b">
+          <h2 className="text-lg font-semibold">
+            Monthly Report
+          </h2>
+
+          <div className="flex gap-2">
+            <select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(Number(e.target.value))}
+              className="border rounded px-2 py-1"
+            >
+              {Array.from({ length: 12 }, (_, i) => (
+                <option key={i} value={i + 1}>
+                  {new Date(0, i).toLocaleString('default', { month: 'long' })}
+                </option>
+              ))}
+            </select>
+
+            {/*<input
+              type="number"
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(Number(e.target.value))}
+              className="border rounded px-2 py-1 w-24"
+            />*/}
+          </div>
+        </div>
+
+        {/* CONTENT */}
+        {monthlyReport ? (
+          <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-green-50 p-4 rounded-lg">
+              <div className="text-sm text-gray-600">Revenue</div>
+              <div className="text-2xl font-bold text-green-600">
+                ${monthlyReport.revenue}
+              </div>
+            </div>
+
+            <div className="bg-red-50 p-4 rounded-lg">
+              <div className="text-sm text-gray-600">Expense</div>
+              <div className="text-2xl font-bold text-red-600">
+                ${monthlyReport.expense}
+              </div>
+            </div>
+
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="text-sm text-gray-600">Profit</div>
+              <div className="text-2xl font-bold text-blue-600">
+                ${monthlyReport.profit}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="p-6 text-gray-500">
+            No data available for this month
+          </div>
+        )}
       </div>
 
       {/*reorder recommendation per season*/}

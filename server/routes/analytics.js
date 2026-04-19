@@ -295,4 +295,66 @@ router.get('/reorder-recommendations', async (req, res) => {
   }
 });
 
+// monthly financial report
+router.get('/monthly-report', async (req, res) => {
+  try {
+    const { month, year } = req.query;
+
+    const now = new Date();
+    const selectedMonth = parseInt(month) || (now.getMonth() + 1);
+    const selectedYear = parseInt(year) || now.getFullYear();
+
+    // date range
+    const startDate = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-01`;
+    const endDateQuery = `
+      (DATE_TRUNC('month', DATE :startDate) + INTERVAL '1 month')
+    `;
+
+    // TOTAL REVENUE (from sales)
+    const [revenueResult] = await sequelize.query(`
+      SELECT 
+        COALESCE(SUM(total_amount), 0) as total_revenue
+      FROM sales
+      WHERE status = 'completed'
+        AND sale_date >= DATE :startDate
+        AND sale_date < ${endDateQuery}
+    `, {
+      type: sequelize.QueryTypes.SELECT,
+      replacements: { startDate }
+    });
+
+    // TOTAL EXPENSE (from purchase orders)
+    const [expenseResult] = await sequelize.query(`
+      SELECT 
+        COALESCE(SUM(poi.quantity * poi.buy_price), 0) as total_expense
+      FROM purchase_orders po
+      JOIN purchase_order_items poi ON poi.purchase_order_id = po.id
+      WHERE po.status IN ('ordered', 'received')
+        AND po.created_at >= DATE :startDate
+        AND po.created_at < ${endDateQuery}
+    `, {
+      type: sequelize.QueryTypes.SELECT,
+      replacements: { startDate }
+    });
+
+    const revenue = Number(revenueResult.total_revenue);
+    const expense = Number(expenseResult.total_expense);
+
+    res.json({
+      success: true,
+      data: {
+        month: selectedMonth,
+        year: selectedYear,
+        revenue,
+        expense,
+        profit: revenue - expense
+      }
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 module.exports = router;
