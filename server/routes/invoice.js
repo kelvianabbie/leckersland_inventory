@@ -199,16 +199,16 @@ router.get('/:id', async (req, res) => {
       subtotal += lineTotal;
 
       doc
-        .font(isCJK ? 'CJK' : 'Helvetica')
+        .font(isCJK ? 'CJK' : 'Custom')
         .text(name, 50, y, { width: 230 });
 
       doc
-        .font('Helvetica')
+        .font('Custom')
         .text(qty.toString(), 300, y)
         .text(`$${price.toFixed(2)}`, 350, y)
         .text(`$${lineTotal.toFixed(2)}`, 450, y);
 
-      doc.font(isCJK ? 'CJK' : 'Helvetica');
+      doc.font(isCJK ? 'CJK' : 'Custom');
       const rowHeight = doc.heightOfString(name, { width: 230 });
       doc.font('Helvetica');
       y += Math.max(rowHeight, 20);
@@ -283,7 +283,7 @@ router.get('/:id', async (req, res) => {
       .font('Helvetica')
       .fontSize(10)
       .text(
-        'Customer Signature: _________________________________',
+        'Customer Signature: ___________________________________',
         50,
         sectionY
       )
