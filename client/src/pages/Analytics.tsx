@@ -33,11 +33,10 @@ export default function Analytics() {
   const [vendorMode, setVendorMode] = useState<'quantity' | 'expense'>('expense');
   const [monthlyReport, setMonthlyReport] = useState<any>(null);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
   useEffect(() => {
     loadData();
-  }, [season, mode, vendorMode, selectedMonth, selectedYear]);
+  }, [season, mode, vendorMode, selectedMonth]);
 
   const loadData = async () => {
     try {
@@ -58,7 +57,7 @@ export default function Analytics() {
         analyticsAPI.getBiggestVendor(vendorMode),
         analyticsAPI.getTopMargins(10),
         analyticsAPI.getTopProfit(season, 10),
-        analyticsAPI.getMonthlyReport(selectedMonth, selectedYear)
+        analyticsAPI.getMonthlyReport(selectedMonth)
       ]);
 
       setTopSellers(sellersRes.data?.results || []);
@@ -433,13 +432,6 @@ export default function Analytics() {
                 </option>
               ))}
             </select>
-
-            {/*<input
-              type="number"
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(Number(e.target.value))}
-              className="border rounded px-2 py-1 w-24"
-            />*/}
           </div>
         </div>
 

@@ -302,7 +302,6 @@ router.get('/monthly-report', async (req, res) => {
 
     const now = new Date();
     const selectedMonth = parseInt(month) || (now.getMonth() + 1);
-    const selectedYear = parseInt(year) || now.getFullYear();
 
     // date range
     const startDate = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-01`;
@@ -344,7 +343,6 @@ router.get('/monthly-report', async (req, res) => {
       success: true,
       data: {
         month: selectedMonth,
-        year: selectedYear,
         revenue,
         expense,
         profit: revenue - expense

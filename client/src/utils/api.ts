@@ -85,8 +85,8 @@ export const analyticsAPI = {
     const res = await api.get('/analytics/top-profit', { params: { season, limit } });
     return res.data;
   },
-  getMonthlyReport: (month?: number, year?: number) =>
-    api.get(`/analytics/monthly-report`, { params: { month, year } }
+  getMonthlyReport: (month?: number) =>
+    api.get(`/analytics/monthly-report`, { params: { month } }
   ),
 };
 
