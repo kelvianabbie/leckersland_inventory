@@ -7,7 +7,7 @@ const router = express.Router();
 
 const drawTableHeader = (doc, y) => {
   doc
-    .font('Custom-Bold')
+    .font('Helvetica-Bold')
     .fontSize(11);
 
   const textY = y;
@@ -65,7 +65,7 @@ router.get('/:id', async (req, res) => {
     doc.registerFont('CJK', fontCJK);
 
     // default font
-    doc.font('Custom');
+    doc.font('Helvetica');
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader(
@@ -86,14 +86,14 @@ router.get('/:id', async (req, res) => {
     ========================= */
 
     doc
-      .font('Custom-Bold')
+      .font('Helvetica-Bold')
       .fontSize(20)
       .text('LECKERSLAND', leftX, currentY);
 
     currentY += 25;
 
     doc
-      .font('Custom')
+      .font('Helvetica')
       .fontSize(10)
       .text(
         '45953 Warm Springs Blvd, Fremont, CA 94539',
@@ -118,14 +118,14 @@ router.get('/:id', async (req, res) => {
     ========================= */
 
     doc
-      .font('Custom-Bold')
+      .font('Helvetica-Bold')
       .fontSize(12)
       .text('Bill To:', leftX, currentY);
 
     currentY += 18;
 
     doc
-      .font('Custom')
+      .font('Helvetica')
       .fontSize(10)
       .text(sale.customer?.name || 'N/A', leftX, currentY, {
         width: contentWidth
@@ -160,7 +160,7 @@ router.get('/:id', async (req, res) => {
     const rightTopY = currentY - 60;
 
     doc
-      .font('Custom')
+      .font('Helvetica')
       .fontSize(10)
       .text(
         `Ref: ${sale.ref || '-'}`,
@@ -192,7 +192,7 @@ router.get('/:id', async (req, res) => {
     const PAGE_BOTTOM = 750;
     let subtotal = 0;
 
-    doc.font('Custom').fontSize(10);
+    doc.font('Helvetica').fontSize(10);
 
     sale.items.forEach((item) => {
       // 🚨 PAGE BREAK CHECK
@@ -213,18 +213,18 @@ router.get('/:id', async (req, res) => {
       subtotal += lineTotal;
 
       doc
-        .font(isCJK ? 'CJK' : 'Custom')
+        .font(isCJK ? 'CJK' : 'Helvetica')
         .text(name, 50, y, { width: 230 });
 
       doc
-        .font('Custom')
+        .font('Helvetica')
         .text(qty.toString(), 300, y)
         .text(`$${price.toFixed(2)}`, 350, y)
         .text(`$${lineTotal.toFixed(2)}`, 450, y);
 
-      doc.font(isCJK ? 'CJK' : 'Custom');
+      doc.font(isCJK ? 'CJK' : 'Helvetica');
       const rowHeight = doc.heightOfString(name, { width: 230 });
-      doc.font('Custom');
+      doc.font('Helvetica');
       y += Math.max(rowHeight, 20);
     });
 
@@ -244,17 +244,17 @@ router.get('/:id', async (req, res) => {
 
     doc
       .fontSize(11)
-      .font('Custom')
+      .font('Helvetica')
       .text(`Subtotal: $${subtotal.toFixed(2)}`, 350, y + 20);
 
     doc
       .fontSize(11)
-      .font('Custom')
+      .font('Helvetica')
       .text(`Credit: $${credit.toFixed(2)}`, 350, y + 35);
 
     doc
       .fontSize(14)
-      .font('Custom-Bold')
+      .font('Helvetica-Bold')
       .text(`TOTAL: $${total.toFixed(2)}`, 350, y + 55);
 
     /* =========================
@@ -264,10 +264,10 @@ router.get('/:id', async (req, res) => {
     let sectionY = y + 110;
 
     doc
-      .font('Custom')
+      .font('Helvetica')
       .fontSize(10)
       .text(
-        'Warehouse Verification (Signature): ___________________________',
+        'Warehouse Verification (Signature): _____________________________',
         50,
         sectionY
       )
@@ -284,7 +284,7 @@ router.get('/:id', async (req, res) => {
     The customer is responsible for inspecting the order upon delivery or receipt, including verifying quantities, condition, markings, and labels, where applicable. Claims for discrepancies, shortages, or damaged goods must be made at the time of delivery or receipt. Signature below confirms that the goods and/or services listed above were received in apparent good order.`;
 
     doc
-      .font('Custom')
+      .font('Helvetica')
       .fontSize(9)
       .text(termsText, 50, sectionY, {
         width: 500,
@@ -294,10 +294,10 @@ router.get('/:id', async (req, res) => {
     sectionY += doc.heightOfString(termsText, { width: 500 }) + 30;
 
     doc
-      .font('Custom')
+      .font('Helvetica')
       .fontSize(10)
       .text(
-        'Customer Signature: ________________________________________',
+        'Customer Signature: ____________________________________________',
         50,
         sectionY
       )
