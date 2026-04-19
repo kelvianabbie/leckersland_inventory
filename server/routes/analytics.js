@@ -316,7 +316,7 @@ router.get('/monthly-report', async (req, res) => {
         COALESCE(SUM(p.amount), 0) as total_revenue
       FROM payments p
       JOIN sales s ON p.sale_id = s.id
-      WHERE s.status = 'completed'
+      WHERE s.status IN ('pending', 'completed')
         AND p.payment_date >= DATE :startDate
         AND p.payment_date < ${endDateQuery}
     `, {
