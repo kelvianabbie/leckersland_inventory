@@ -8,20 +8,23 @@ import Alert from '../components/Alert';
 export default function SaleDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-
   const [sale, setSale] = useState<Sale | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const [paymentHistory, setPaymentHistory] = useState<any[]>([]);
-  const [paymentLoading, setPaymentLoading] = useState(false);
-
-  const [paymentAmount, setPaymentAmount] = useState(0);
-  const [paymentDate, setPaymentDate] = useState('');
+  const [creditMemoInput, setCreditMemoInput] = useState<number>(sale?.credit_memo || 0);
+  const [creditLoading, setCreditLoading] = useState(false);
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://leckersland-inventory.onrender.com/api';
+  const token = localStorage.getItem('token');
 
   useEffect(() => {
     loadSale();
   }, [id]);
+
+  useEffect(() => {
+    if (sale) {
+      setCreditMemoInput(sale.credit_memo || 0);
+    }
+  }, [sale]);
 
   const loadSale = async () => {
     try {
@@ -30,9 +33,6 @@ export default function SaleDetail() {
       const res = await salesAPI.getById(Number(id));
       setSale(res.data?.sale || null);
 
-      const payRes = await paymentsAPI.getBySale(Number(id));
-      setPaymentHistory(payRes.data?.data?.payments || []);
-
     } catch (err) {
       setError('Failed to load sale');
     } finally {
@@ -40,39 +40,32 @@ export default function SaleDetail() {
     }
   };
 
-  const handleAddPayment = async () => {
-    if (!sale || paymentAmount <= 0) return;
+  const handleDownloadInvoice = () => {
+    if (!sale?.id) {
+      setError('Invalid sale ID');
+      return;
+    }
+
+    window.open(
+      `${API_BASE_URL}/invoice/${sale.id}?token=${token}`,
+      '_blank'
+    );
+  };
+
+  const handleApplyCreditMemo = async () => {
+    if (!sale) return;
 
     try {
-      setPaymentLoading(true);
+      setCreditLoading(true);
 
-      const subtotal = sale.items.reduce(
-        (sum, i) => sum + i.quantity * i.unit_price,
-        0
-      );
-
-      const total = subtotal - (sale.credit_memo || 0);
-
-      if ((sale.total_paid || 0) + paymentAmount > total) {
-        setError('Payment exceeds total');
-        return;
-      }
-
-      await paymentsAPI.create({
-        sale_id: sale.id,
-        amount: paymentAmount,
-        payment_date: paymentDate || undefined
-      });
-
-      setPaymentAmount(0);
-      setPaymentDate('');
+      await salesAPI.updateCreditMemo(sale.id, creditMemoInput);
 
       await loadSale();
 
     } catch (err) {
-      setError('Failed to add payment');
+      setError('Failed to apply credit memo');
     } finally {
-      setPaymentLoading(false);
+      setCreditLoading(false);
     }
   };
 
@@ -88,106 +81,130 @@ export default function SaleDetail() {
   const total = subtotal - (sale.credit_memo || 0);
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 p-6">
 
-      <button
-        onClick={() => navigate(-1)}
-        className="text-sm text-blue-600"
-      >
+      {/* BACK */}
+      <button onClick={() => navigate(-1)} className="text-sm text-blue-600">
         ← Back
       </button>
 
       {error && <Alert type="error">{error}</Alert>}
 
-      {/* HEADER */}
-      <div className="bg-white p-6 rounded shadow">
-        <h1 className="text-xl font-bold mb-2">
-          Sale #{sale.id}
+      {/* TOP HEADER */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
+        <h1 className="text-2xl font-bold">
+          Sale Detail #{sale.id}
         </h1>
 
-        <p><strong>Status:</strong> {sale.status}</p>
-        <p><strong>Date:</strong> {new Date(sale.sale_date).toLocaleString()}</p>
-        <p><strong>Customer:</strong> {sale.customer?.name}</p>
-        <p><strong>Season:</strong> {sale.season}</p>
-        <p><strong>Ref:</strong> {sale.ref || '-'}</p>
-      </div>
+        <div className="flex flex-wrap gap-2 items-center">
 
-      {/* ITEMS */}
-      <div className="bg-white p-6 rounded shadow">
-        <h2 className="font-semibold mb-4">Items</h2>
+          {/* Download */}
+          <button
+            onClick={handleDownloadInvoice}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg"
+          >
+            Download Invoice
+          </button>
 
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b">
-              <th className="text-left">Product</th>
-              <th>Qty</th>
-              <th>Price</th>
-              <th>Total</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {sale.items.map(item => (
-              <tr key={item.product_id} className="border-b">
-                <td>{item.product?.name}</td>
-                <td className="text-center">{item.quantity}</td>
-                <td className="text-center">${item.unit_price}</td>
-                <td className="text-center">
-                  ${(item.quantity * item.unit_price).toFixed(2)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        <div className="text-right mt-4 space-y-1">
-          <p>Subtotal: ${subtotal.toFixed(2)}</p>
-          <p>Credit Memo: ${sale.credit_memo || 0}</p>
-          <p className="font-bold text-lg">Total: ${total.toFixed(2)}</p>
-          <p>Paid: ${sale.total_paid?.toFixed(2) || '0.00'}</p>
-        </div>
-      </div>
-
-      {/* PAYMENTS */}
-      <div className="bg-white p-6 rounded shadow">
-        <h2 className="font-semibold mb-4">Payments</h2>
-
-        <div className="space-y-2 mb-4">
-          {paymentHistory.length === 0 && (
-            <p className="text-sm text-gray-500">No payments yet</p>
-          )}
-
-          {paymentHistory.map((p, i) => (
-            <div key={i} className="text-sm border-b pb-1">
-              ${p.amount} — {new Date(p.paymentDate).toLocaleString()}
-            </div>
-          ))}
-        </div>
-
-        {/* ADD PAYMENT */}
-        <div className="flex gap-2">
+          {/* Credit Memo */}
           <input
             type="number"
-            placeholder="Amount"
-            value={paymentAmount}
-            onChange={(e) => setPaymentAmount(parseFloat(e.target.value) || 0)}
-            className="border px-2 py-1 rounded"
-          />
-
-          <input
-            type="datetime-local"
-            value={paymentDate}
-            onChange={(e) => setPaymentDate(e.target.value)}
-            className="border px-2 py-1 rounded"
+            value={creditMemoInput}
+            onChange={(e) => setCreditMemoInput(parseFloat(e.target.value) || 0)}
+            className="border px-3 py-2 rounded-lg w-32"
+            placeholder="Credit"
           />
 
           <button
-            onClick={handleAddPayment}
-            className="bg-green-600 text-white px-3 rounded"
+            onClick={handleApplyCreditMemo}
+            disabled={creditLoading}
+            className="bg-yellow-500 text-white px-4 py-2 rounded-lg"
           >
-            Add
+            Apply
           </button>
+
         </div>
+      </div>
+
+      {/* MAIN CARD */}
+      <div className="bg-white rounded-lg shadow p-6 space-y-6">
+
+        {/* INFO GRID */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+
+          <div>
+            <p className="text-gray-500">Date</p>
+            <p className="font-medium">
+              {new Date(sale.sale_date).toLocaleString()}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-gray-500">Customer</p>
+            <p className="font-medium">{sale.customer?.name || '-'}</p>
+          </div>
+
+          <div>
+            <p className="text-gray-500">Status</p>
+            <p className="capitalize">{sale.status}</p>
+          </div>
+
+          <div>
+            <p className="text-gray-500">Ref</p>
+            <p>{sale.ref || '-'}</p>
+          </div>
+
+        </div>
+
+        {/* ITEMS TABLE */}
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[600px] text-sm">
+
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-2 text-left">Product</th>
+                <th className="px-4 py-2 text-center">Quantity</th>
+                <th className="px-4 py-2 text-center">Price</th>
+                <th className="px-4 py-2 text-center">Total</th>
+              </tr>
+            </thead>
+
+            <tbody className="divide-y">
+              {sale.items.map(item => (
+                <tr key={item.product_id}>
+                  <td className="px-4 py-2">{item.product?.name}</td>
+                  <td className="px-4 py-2 text-center">{item.quantity}</td>
+                  <td className="px-4 py-2 text-center">
+                    ${item.unit_price.toFixed(2)}
+                  </td>
+                  <td className="px-4 py-2 text-center">
+                    ${(item.quantity * item.unit_price).toFixed(2)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+
+          </table>
+        </div>
+
+        {/* TOTALS */}
+        <div className="text-right space-y-1">
+
+          <p>Subtotal: ${subtotal.toFixed(2)}</p>
+
+          <p>Credit: ${sale.credit_memo?.toFixed(2) || '0.00'}</p>
+
+          <p className="text-lg font-bold">
+            Total Price: ${total.toFixed(2)}
+          </p>
+
+          <p>
+            Total Paid: ${sale.total_paid?.toFixed(2) || '0.00'}
+          </p>
+
+        </div>
+
       </div>
 
     </div>

@@ -122,6 +122,9 @@ export const salesAPI = {
     const response = await api.get(`/sales/${id}`);
     return response.data;
   },
+  updateCreditMemo: (id: number, credit_memo: number) =>
+    api.put(`/sales/${id}/credit-memo`, { credit_memo }
+  ),
 };
 
 //Customers endpoints
