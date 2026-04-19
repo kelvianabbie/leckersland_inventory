@@ -199,6 +199,9 @@ router.get('/:id', async (req, res) => {
       TOTALS
     ========================= */
 
+    const credit = parseFloat(sale.creditMemo || 0);
+    const total = subtotal - credit;
+
     if (y > PAGE_BOTTOM - 100) {
       doc.addPage();
       y = 50;
@@ -208,20 +211,23 @@ router.get('/:id', async (req, res) => {
 
     doc
       .fontSize(11)
+      .font('Helvetica')
       .text(`Subtotal: $${subtotal.toFixed(2)}`, 350, y + 20);
+
+    doc
+      .fontSize(11)
+      .text(`Credit: $${credit.toFixed(2)}`, 350, y + 35);
 
     doc
       .fontSize(14)
       .font('Helvetica-Bold')
-      .text(`TOTAL: $${subtotal.toFixed(2)}`, 350, y + 40);
+      .text(`TOTAL: $${total.toFixed(2)}`, 350, y + 55);
 
     /* =========================
       TERMS + SIGNATURE SECTION
     ========================= */
 
     let sectionY = y + 80;
-
-    doc.moveTo(50, sectionY - 10).lineTo(550, sectionY - 10).stroke();
 
     doc
       .font('Helvetica')
@@ -262,7 +268,7 @@ router.get('/:id', async (req, res) => {
         sectionY
       )
       .text(
-        'Date: ________________',
+        'Date: ___________________',
         350,
         sectionY
       );
