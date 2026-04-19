@@ -22,6 +22,14 @@ router.post('/', async (req, res) => {
       });
     }
 
+    if (items.length > 11) {
+      await t.rollback();
+      return res.status(400).json({
+        success: false,
+        error: 'Maximum 11 items allowed per sale'
+      });
+    }
+
     const saleDate = sale_date ? new Date(sale_date) : new Date();
     const season = getSeason(saleDate);
 

@@ -92,8 +92,15 @@ export default function Sales() {
 
   const navigate = useNavigate();
 
+  const MAX_ITEMS = 11;
+
   const handleAddToCart = () => {
     if (!selectedProductId || quantity <= 0) return;
+
+    if (cart.length >= MAX_ITEMS) {
+      setError(`Maximum ${MAX_ITEMS} products allowed per sale (invoice limit)`);
+      return;
+    }
 
     const product = availableProducts.find(
       p => p.product_id === selectedProductId
@@ -103,6 +110,11 @@ export default function Sales() {
 
     setCart(prev => {
       const existing = prev.find(i => i.product_id === selectedProductId);
+
+      if (!existing && prev.length >= MAX_ITEMS) {
+        setError(`Maximum ${MAX_ITEMS} products allowed per sale`);
+        return prev;
+      }
 
       if (existing) {
         return prev.map(i =>
@@ -325,6 +337,8 @@ export default function Sales() {
             </select>
           </div>
           
+          <label className="block text-sm font-medium text-gray-700 mb-2">Add Product * (Max 11) ({cart.length}/11 items added)</label>
+          
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <select
               value={selectedProductId}
@@ -358,6 +372,7 @@ export default function Sales() {
             <button
               type="button"
               onClick={handleAddToCart}
+              disabled={cart.length >= 11}
               className="bg-primary text-white rounded-lg"
             >
               Add
