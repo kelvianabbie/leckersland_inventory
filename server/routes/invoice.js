@@ -131,13 +131,23 @@ router.get('/:id', async (req, res) => {
       RIGHT SIDE (DATE)
     ========================= */
 
+    const rightTopY = currentY - 60;
+
     doc
       .font('Helvetica')
       .fontSize(10)
       .text(
+        `Ref: ${sale.ref || '-'}`,
+        rightX,
+        rightTopY,
+        { width: 200, align: 'right' }
+      );
+
+    doc
+      .text(
         `Invoice Date: ${new Date(sale.saleDate).toLocaleDateString()}`,
         rightX,
-        currentY - 60,
+        rightTopY + 15,
         { width: 200, align: 'right' }
       );
 
@@ -206,32 +216,56 @@ router.get('/:id', async (req, res) => {
       .text(`TOTAL: $${subtotal.toFixed(2)}`, 350, y + 40);
 
     /* =========================
-      SIGNATURE SECTION
+      TERMS + SIGNATURE SECTION
     ========================= */
 
-    const signatureX = 420;
-    const signatureY = y + 110;
+    let sectionY = y + 80;
 
-    // NAME (TOP)
+    doc.moveTo(50, sectionY - 10).lineTo(550, sectionY - 10).stroke();
+
     doc
       .font('Helvetica')
-      .fontSize(11)
-      .text(sale.customer?.name || 'Customer', signatureX, signatureY);
-
-    // BLANK SPACE (signature area)
-    const gapHeight = 80;
-
-    // DATE (BOTTOM)
-    doc
-      .font('Helvetica')
-      .fontSize(11)
+      .fontSize(10)
       .text(
-        new Date(sale.saleDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric'}),
-        signatureX,
-        signatureY + gapHeight
+        'Warehouse Verification (Signature): ___________________',
+        50,
+        sectionY
+      )
+      .text(
+        'Date: ___________________',
+        350,
+        sectionY
       );
 
-    /* ========================= */
+    sectionY += 30;
+
+    const termsText = `The pricing information contained in this invoice reflects the goods and/or services provided. An electronic invoice may be issued to the customer or the party responsible for payment. Unless otherwise stated in a separate customer agreement, all amounts are due upon receipt.
+
+    The customer is responsible for inspecting the order upon delivery or receipt, including verifying quantities, condition, markings, and labels, where applicable. Claims for discrepancies, shortages, or damaged goods must be made at the time of delivery or receipt. Signature below confirms that the goods and/or services listed above were received in apparent good order.`;
+
+    doc
+      .font('Helvetica')
+      .fontSize(9)
+      .text(termsText, 50, sectionY, {
+        width: 500,
+        align: 'justify'
+      });
+
+    sectionY += doc.heightOfString(termsText, { width: 500 }) + 30;
+
+    doc
+      .font('Helvetica')
+      .fontSize(10)
+      .text(
+        'Customer Signature: ___________________________________',
+        50,
+        sectionY
+      )
+      .text(
+        'Date: ________________',
+        350,
+        sectionY
+      );
 
     doc.end();
 
