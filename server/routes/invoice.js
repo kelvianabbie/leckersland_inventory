@@ -10,17 +10,31 @@ const drawTableHeader = (doc, y) => {
     .font('Custom-Bold')
     .fontSize(11);
 
-  doc.moveTo(50, y - 10).lineTo(550, y - 10).stroke();
+  const textY = y;
 
+  // Measure actual text height
+  const textHeight = doc.heightOfString('Product');
+
+  const paddingTop = 8;
+  const paddingBottom = 8;
+
+  const topLineY = textY - paddingTop;
+  const bottomLineY = textY + textHeight + paddingBottom;
+
+  // Top line
+  doc.moveTo(50, topLineY).lineTo(550, topLineY).stroke();
+
+  // Text
   doc
-    .text('Product', 50, y)
-    .text('Qty', 300, y)
-    .text('Unit Price', 350, y)
-    .text('Line Total', 450, y);
+    .text('Product', 50, textY)
+    .text('Qty', 300, textY)
+    .text('Unit Price', 350, textY)
+    .text('Line Total', 450, textY);
 
-  doc.moveTo(50, y + 15).lineTo(550, y + 15).stroke();
+  // Bottom line
+  doc.moveTo(50, bottomLineY).lineTo(550, bottomLineY).stroke();
 
-  return y + 25;
+  return bottomLineY + 10;
 };
 
 router.get('/:id', async (req, res) => {
@@ -199,7 +213,7 @@ router.get('/:id', async (req, res) => {
       subtotal += lineTotal;
 
       doc
-        .font('CJK')
+        .font(isCJK ? 'CJK' : 'Custom')
         .text(name, 50, y, { width: 230 });
 
       doc
@@ -253,7 +267,7 @@ router.get('/:id', async (req, res) => {
       .font('Custom')
       .fontSize(10)
       .text(
-        'Warehouse Verification (Signature): _______________________',
+        'Warehouse Verification (Signature): ___________________________',
         50,
         sectionY
       )
@@ -283,7 +297,7 @@ router.get('/:id', async (req, res) => {
       .font('Custom')
       .fontSize(10)
       .text(
-        'Customer Signature: ___________________________________',
+        'Customer Signature: ________________________________________',
         50,
         sectionY
       )
