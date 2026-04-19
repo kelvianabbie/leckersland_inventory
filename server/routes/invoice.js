@@ -236,7 +236,7 @@ router.get('/:id', async (req, res) => {
     doc
       .fontSize(11)
       .font('Helvetica')
-      .text(`Credit: $${credit.toFixed(2)}`, 350, y + 35);
+      .text(`Credit: $   ${credit.toFixed(2)}`, 350, y + 35);
 
     doc
       .fontSize(14)
@@ -283,7 +283,7 @@ router.get('/:id', async (req, res) => {
       .font('Helvetica')
       .fontSize(10)
       .text(
-        'Customer Signature: ___________________________________',
+        'Customer Signature: ____________________________________',
         50,
         sectionY
       )
