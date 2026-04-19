@@ -82,12 +82,6 @@ export default function SaleDetail() {
 
   return (
     <div className="space-y-6 p-6">
-
-      {/* BACK */}
-      <button onClick={() => navigate(-1)} className="text-sm text-blue-600">
-        ← Back
-      </button>
-
       {error && <Alert type="error">{error}</Alert>}
 
       {/* TOP HEADER */}
