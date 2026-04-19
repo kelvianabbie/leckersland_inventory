@@ -227,13 +227,13 @@ router.get('/:id', async (req, res) => {
       TERMS + SIGNATURE SECTION
     ========================= */
 
-    let sectionY = y + 80;
+    let sectionY = y + 110;
 
     doc
       .font('Helvetica')
       .fontSize(10)
       .text(
-        'Warehouse Verification (Signature): ___________________',
+        'Warehouse Verification (Signature): ______________________',
         50,
         sectionY
       )
