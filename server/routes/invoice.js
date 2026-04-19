@@ -67,231 +67,144 @@ router.get('/:id', async (req, res) => {
 
     let currentY = 50;
 
-    /* =========================
-      HEADER
-    ========================= */
+    const ITEMS_PER_PAGE = 11;
+    const itemChunks = [];
 
-    doc
-      .font('Helvetica-Bold')
-      .fontSize(20)
-      .text('LECKERSLAND', leftX, currentY);
-
-    currentY += 25;
-
-    doc
-      .font('Helvetica')
-      .fontSize(10)
-      .text(
-        '45953 Warm Springs Blvd, Fremont, CA 94539',
-        leftX,
-        currentY,
-        { width: contentWidth }
-      );
-
-    currentY += doc.heightOfString(
-      '45953 Warm Springs Blvd, Fremont, CA 94539',
-      { width: contentWidth }
-    );
-
-    doc.text('Email: info@leckersland.com', leftX, currentY, {
-      width: contentWidth
-    });
-
-    currentY += 40;
-
-    /* =========================
-      CUSTOMER
-    ========================= */
-
-    doc
-      .font('Helvetica-Bold')
-      .fontSize(12)
-      .text('Bill To:', leftX, currentY);
-
-    currentY += 18;
-
-    doc
-      .font('Helvetica')
-      .fontSize(10)
-      .text(sale.customer?.name || 'N/A', leftX, currentY, {
-        width: contentWidth
-      });
-
-    currentY += doc.heightOfString(sale.customer?.name || 'N/A', {
-      width: contentWidth
-    });
-
-    doc.text(`Contact: ${sale.customer?.contactInfo || 'N/A'}`, leftX, currentY, {
-      width: contentWidth
-    });
-
-    currentY += doc.heightOfString(
-      `Contact: ${sale.customer?.contactInfo || 'N/A'}`,
-      { width: contentWidth }
-    );
-
-    doc.text(`Address: ${sale.customer?.address || 'N/A'}`, leftX, currentY, {
-      width: contentWidth
-    });
-
-    currentY += doc.heightOfString(
-      `Address: ${sale.customer?.address || 'N/A'}`,
-      { width: contentWidth }
-    );
-
-    /* =========================
-      RIGHT SIDE (DATE)
-    ========================= */
-
-    const rightTopY = currentY - 60;
-
-    doc
-      .font('Helvetica')
-      .fontSize(10)
-      .text(
-        `Ref: ${sale.ref || '-'}`,
-        rightX,
-        rightTopY,
-        { width: 200, align: 'right' }
-      );
-
-    doc
-      .text(
-        `Invoice Date: ${new Date(sale.saleDate).toLocaleDateString()}`,
-        rightX,
-        rightTopY + 15,
-        { width: 200, align: 'right' }
-      );
-
-    /* =========================
-      TABLE START POSITION
-    ========================= */
-
-    const tableTop = currentY + 40;
-
-    let y = drawTableHeader(doc, tableTop);
-
-    /* =========================
-      TABLE BODY
-    ========================= */
-
-    const PAGE_BOTTOM = 750;
-    let subtotal = 0;
-
-    doc.font('Helvetica').fontSize(10);
-
-    sale.items.forEach((item) => {
-      // 🚨 PAGE BREAK CHECK
-      if (y > PAGE_BOTTOM) {
-        doc.addPage();
-        y = 50;
-
-        // redraw table header on new page
-        y = drawTableHeader(doc, y);
-      }
-
-      const name = item.product?.name || 'Unknown';
-      const qty = item.quantity;
-      const price = parseFloat(item.unitPrice);
-      const lineTotal = qty * price;
-      const isCJK = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]/.test(name);
-
-      subtotal += lineTotal;
-
-      doc
-        .font(isCJK ? 'CJK' : 'Custom')
-        .text(name, 50, y, { width: 230 });
-
-      doc
-        .font('Custom')
-        .text(qty.toString(), 300, y)
-        .text(`$${price.toFixed(2)}`, 350, y)
-        .text(`$${lineTotal.toFixed(2)}`, 450, y);
-
-      doc.font(isCJK ? 'CJK' : 'Custom');
-      const rowHeight = doc.heightOfString(name, { width: 230 });
-      doc.font('Helvetica');
-      y += Math.max(rowHeight, 20);
-    });
-
-    /* =========================
-      TOTALS
-    ========================= */
-
-    const credit = parseFloat(sale.creditMemo || 0);
-    const total = subtotal - credit;
-
-    if (y > PAGE_BOTTOM - 100) {
-      doc.addPage();
-      y = 50;
+    for (let i = 0; i < sale.items.length; i += ITEMS_PER_PAGE) {
+      itemChunks.push(sale.items.slice(i, i + ITEMS_PER_PAGE));
     }
 
-    doc.moveTo(50, y + 10).lineTo(550, y + 10).stroke();
+    const totalPages = itemChunks.length;
+    let subtotal = 0;
 
-    doc
-      .fontSize(11)
-      .font('Helvetica')
-      .text(`Subtotal: $${subtotal.toFixed(2)}`, 350, y + 20);
+    itemChunks.forEach((items, pageIndex) => {
+      if (pageIndex > 0) {
+        doc.addPage();
+      }
 
-    doc
-      .fontSize(11)
-      .font('Helvetica')
-      .text(`Credit: $${credit.toFixed(2)}`, 361, y + 35); //350 align with subtotal, 361 align with $
+      let currentY = 50;
 
-    doc
-      .fontSize(14)
-      .font('Helvetica-Bold')
-      .text(`TOTAL: $${total.toFixed(2)}`, 350, y + 55);
+      /* =========================
+        HEADER (repeat every page)
+      ========================= */
 
-    /* =========================
-      TERMS + SIGNATURE SECTION
-    ========================= */
+      doc.font('Helvetica-Bold').fontSize(20).text('LECKERSLAND', leftX, currentY);
 
-    let sectionY = y + 100;
+      currentY += 25;
 
-    doc
-      .font('Helvetica')
-      .fontSize(10)
-      .text(
-        'Warehouse Verification (Signature): ________________________',
-        50,
-        sectionY
-      )
-      .text(
-        'Date: ___________________',
-        350,
-        sectionY
-      );
+      doc.font('Helvetica').fontSize(10)
+        .text('45953 Warm Springs Blvd, Fremont, CA 94539', leftX, currentY, { width: contentWidth });
 
-    sectionY += 30;
+      currentY += doc.heightOfString('45953 Warm Springs Blvd, Fremont, CA 94539', { width: contentWidth });
 
-    const termsText = `The pricing information contained in this invoice reflects the goods and/or services provided. An electronic invoice may be issued to the customer or the party responsible for payment. Unless otherwise stated in a separate customer agreement, all amounts are due upon receipt.
+      doc.text('Email: info@leckersland.com', leftX, currentY, { width: contentWidth });
 
-    The customer is responsible for inspecting the order upon delivery or receipt, including verifying quantities, condition, markings, and labels, where applicable. Claims for discrepancies, shortages, or damaged goods must be made at the time of delivery or receipt. Signature below confirms that the goods and/or services listed above were received in apparent good order.`;
+      currentY += 40;
 
-    doc
-      .font('Helvetica')
-      .fontSize(9)
-      .text(termsText, 50, sectionY, {
-        width: 500,
-        align: 'justify'
+      /* =========================
+        CUSTOMER
+      ========================= */
+
+      doc.font('Helvetica-Bold').fontSize(12).text('Bill To:', leftX, currentY);
+      currentY += 18;
+
+      doc.font('Helvetica').fontSize(10)
+        .text(sale.customer?.name || 'N/A', leftX, currentY, { width: contentWidth });
+
+      currentY += doc.heightOfString(sale.customer?.name || 'N/A', { width: contentWidth });
+
+      doc.text(`Contact: ${sale.customer?.contactInfo || 'N/A'}`, leftX, currentY, { width: contentWidth });
+
+      currentY += doc.heightOfString(`Contact: ${sale.customer?.contactInfo || 'N/A'}`, { width: contentWidth });
+
+      doc.text(`Address: ${sale.customer?.address || 'N/A'}`, leftX, currentY, { width: contentWidth });
+
+      currentY += doc.heightOfString(`Address: ${sale.customer?.address || 'N/A'}`, { width: contentWidth });
+
+      /* =========================
+        RIGHT SIDE
+      ========================= */
+
+      const rightTopY = currentY - 60;
+
+      doc.font('Helvetica').fontSize(10)
+        .text(`Ref: ${sale.ref || '-'}`, rightX, rightTopY, { width: 200, align: 'right' });
+
+      doc.text(`Invoice Date: ${new Date(sale.sale_date || sale.saleDate).toLocaleDateString()}`, rightX, rightTopY + 15, { width: 200, align: 'right' });
+
+      /* =========================
+        TABLE
+      ========================= */
+
+      let y = drawTableHeader(doc, currentY + 40);
+
+      doc.font('Helvetica').fontSize(10);
+
+      items.forEach((item) => {
+        const name = item.product?.name || 'Unknown';
+        const qty = item.quantity;
+        const price = parseFloat(item.unit_price || item.unitPrice || 0);
+        const lineTotal = qty * price;
+
+        subtotal += lineTotal;
+
+        doc.text(name, 50, y, { width: 230 });
+        doc.text(qty.toString(), 300, y);
+        doc.text(`$${price.toFixed(2)}`, 350, y);
+        doc.text(`$${lineTotal.toFixed(2)}`, 450, y);
+
+        y += 20;
       });
 
-    sectionY += doc.heightOfString(termsText, { width: 500 }) + 30;
+      /* =========================
+        PAGE NUMBER
+      ========================= */
 
-    doc
-      .font('Helvetica')
-      .fontSize(10)
-      .text(
-        'Customer Signature: ____________________________________',
-        50,
-        sectionY
-      )
-      .text(
-        'Date: ___________________',
-        350,
-        sectionY
+      doc.fontSize(9).text(
+        `Page: ${pageIndex + 1} of ${totalPages}`,
+        450,
+        780,
+        { align: 'right' }
       );
+
+      /* =========================
+        ONLY LAST PAGE → TOTALS + TERMS
+      ========================= */
+
+      if (pageIndex === totalPages - 1) {
+        const credit = parseFloat(sale.creditMemo || 0);
+        const total = subtotal - credit;
+
+        y += 20;
+
+        doc.moveTo(50, y).lineTo(550, y).stroke();
+
+        doc.fontSize(11).text(`Subtotal: $${subtotal.toFixed(2)}`, 350, y + 10);
+        doc.text(`Credit: $${credit.toFixed(2)}`, 350, y + 25);
+
+        doc.fontSize(14).font('Helvetica-Bold')
+          .text(`TOTAL: $${total.toFixed(2)}`, 350, y + 45);
+
+        let sectionY = y + 90;
+
+        doc.font('Helvetica').fontSize(10)
+          .text('Warehouse Verification (Signature): ________________________', 50, sectionY)
+          .text('Date: ___________________', 350, sectionY);
+
+        sectionY += 30;
+
+        const termsText = `The pricing information contained in this invoice reflects the goods and/or services provided...`;
+
+        doc.font('Helvetica').fontSize(9)
+          .text(termsText, 50, sectionY, { width: 500, align: 'justify' });
+
+        sectionY += doc.heightOfString(termsText, { width: 500 }) + 30;
+
+        doc.font('Helvetica').fontSize(10)
+          .text('Customer Signature: ____________________________________', 50, sectionY)
+          .text('Date: ___________________', 350, sectionY);
+      }
+    });
 
     doc.end();
 
