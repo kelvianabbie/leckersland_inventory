@@ -1,12 +1,13 @@
 const express = require('express');
 const PDFDocument = require('pdfkit');
 const { Sale, SaleItem, Product, Customer } = require('../models');
+const path = require('path');
 
 const router = express.Router();
 
 const drawTableHeader = (doc, y) => {
   doc
-    .font('Helvetica-Bold')
+    .font('Custom-Bold')
     .fontSize(11);
 
   doc.moveTo(50, y - 10).lineTo(550, y - 10).stroke();
@@ -41,6 +42,17 @@ router.get('/:id', async (req, res) => {
 
     const doc = new PDFDocument({ margin: 50 });
 
+    const fontRegular = path.join(__dirname, '../fonts/NotoSans-Regular.ttf');
+    const fontBold = path.join(__dirname, '../fonts/NotoSans-Bold.ttf');
+    const fontCJK = path.join(__dirname, '../fonts/NotoSansCJK-Regular.ttc');
+
+    doc.registerFont('Custom', fontRegular);
+    doc.registerFont('Custom-Bold', fontBold);
+    doc.registerFont('CJK', fontCJK);
+
+    // default font
+    doc.font('Custom');
+
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader(
       'Content-Disposition',
@@ -60,14 +72,14 @@ router.get('/:id', async (req, res) => {
     ========================= */
 
     doc
-      .font('Helvetica-Bold')
+      .font('Custom-Bold')
       .fontSize(20)
       .text('LECKERSLAND', leftX, currentY);
 
     currentY += 25;
 
     doc
-      .font('Helvetica')
+      .font('Custom')
       .fontSize(10)
       .text(
         '45953 Warm Springs Blvd, Fremont, CA 94539',
@@ -92,14 +104,14 @@ router.get('/:id', async (req, res) => {
     ========================= */
 
     doc
-      .font('Helvetica-Bold')
+      .font('Custom-Bold')
       .fontSize(12)
       .text('Bill To:', leftX, currentY);
 
     currentY += 18;
 
     doc
-      .font('Helvetica')
+      .font('Custom')
       .fontSize(10)
       .text(sale.customer?.name || 'N/A', leftX, currentY, {
         width: contentWidth
@@ -134,7 +146,7 @@ router.get('/:id', async (req, res) => {
     const rightTopY = currentY - 60;
 
     doc
-      .font('Helvetica')
+      .font('Custom')
       .fontSize(10)
       .text(
         `Ref: ${sale.ref || '-'}`,
@@ -166,7 +178,7 @@ router.get('/:id', async (req, res) => {
     const PAGE_BOTTOM = 750;
     let subtotal = 0;
 
-    doc.font('Helvetica').fontSize(10);
+    doc.font('Custom').fontSize(10);
 
     sale.items.forEach((item) => {
       // 🚨 PAGE BREAK CHECK
@@ -182,16 +194,23 @@ router.get('/:id', async (req, res) => {
       const qty = item.quantity;
       const price = parseFloat(item.unitPrice);
       const lineTotal = qty * price;
+      const isCJK = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]/.test(name);
 
       subtotal += lineTotal;
 
       doc
-        .text(name, 50, y, { width: 230 })
+        .font('CJK')
+        .text(name, 50, y, { width: 230 });
+
+      doc
+        .font('Custom')
         .text(qty.toString(), 300, y)
         .text(`$${price.toFixed(2)}`, 350, y)
         .text(`$${lineTotal.toFixed(2)}`, 450, y);
 
+      doc.font(isCJK ? 'CJK' : 'Custom');
       const rowHeight = doc.heightOfString(name, { width: 230 });
+      doc.font('Custom');
       y += Math.max(rowHeight, 20);
     });
 
@@ -211,16 +230,17 @@ router.get('/:id', async (req, res) => {
 
     doc
       .fontSize(11)
-      .font('Helvetica')
+      .font('Custom')
       .text(`Subtotal: $${subtotal.toFixed(2)}`, 350, y + 20);
 
     doc
       .fontSize(11)
+      .font('Custom')
       .text(`Credit: $${credit.toFixed(2)}`, 350, y + 35);
 
     doc
       .fontSize(14)
-      .font('Helvetica-Bold')
+      .font('Custom-Bold')
       .text(`TOTAL: $${total.toFixed(2)}`, 350, y + 55);
 
     /* =========================
@@ -230,10 +250,10 @@ router.get('/:id', async (req, res) => {
     let sectionY = y + 110;
 
     doc
-      .font('Helvetica')
+      .font('Custom')
       .fontSize(10)
       .text(
-        'Warehouse Verification (Signature): ______________________',
+        'Warehouse Verification (Signature): _______________________',
         50,
         sectionY
       )
@@ -250,7 +270,7 @@ router.get('/:id', async (req, res) => {
     The customer is responsible for inspecting the order upon delivery or receipt, including verifying quantities, condition, markings, and labels, where applicable. Claims for discrepancies, shortages, or damaged goods must be made at the time of delivery or receipt. Signature below confirms that the goods and/or services listed above were received in apparent good order.`;
 
     doc
-      .font('Helvetica')
+      .font('Custom')
       .fontSize(9)
       .text(termsText, 50, sectionY, {
         width: 500,
@@ -260,7 +280,7 @@ router.get('/:id', async (req, res) => {
     sectionY += doc.heightOfString(termsText, { width: 500 }) + 30;
 
     doc
-      .font('Helvetica')
+      .font('Custom')
       .fontSize(10)
       .text(
         'Customer Signature: ___________________________________',
