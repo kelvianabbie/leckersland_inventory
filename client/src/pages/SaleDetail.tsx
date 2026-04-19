@@ -92,12 +92,11 @@ export default function SaleDetail() {
 
       {/* TOP HEADER */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-
         <h1 className="text-2xl font-bold">
           Sale Detail #{sale.id}
         </h1>
 
-        <div className="flex flex-wrap gap-2 items-center">
+        <div className="flex flex-wrap items-center gap-4">
 
           {/* Download */}
           <button
@@ -108,22 +107,23 @@ export default function SaleDetail() {
           </button>
 
           {/* Credit Memo */}
-          <input
-            type="number"
-            value={creditMemoInput}
-            onChange={(e) => setCreditMemoInput(parseFloat(e.target.value) || 0)}
-            className="border px-3 py-2 rounded-lg w-32"
-            placeholder="Credit"
-          />
-
-          <button
-            onClick={handleApplyCreditMemo}
-            disabled={creditLoading}
-            className="bg-yellow-500 text-white px-4 py-2 rounded-lg"
-          >
-            Apply
-          </button>
-
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">Credit Memo:</span>
+            <input
+              type="number"
+              value={creditMemoInput}
+              onChange={(e) => setCreditMemoInput(parseFloat(e.target.value) || 0)}
+              className="border px-3 py-2 rounded-lg w-32"
+              placeholder="0.00"
+            />
+            <button
+              onClick={handleApplyCreditMemo}
+              disabled={creditLoading}
+              className="bg-yellow-500 text-white px-4 py-2 rounded-lg"
+            >
+              Apply
+            </button>
+          </div>
         </div>
       </div>
 
@@ -189,7 +189,7 @@ export default function SaleDetail() {
         </div>
 
         {/* TOTALS */}
-        <div className="text-right space-y-1">
+        <div className="text-left space-y-1">
 
           <p>Subtotal: ${subtotal.toFixed(2)}</p>
 
