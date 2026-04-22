@@ -27,14 +27,17 @@ router.get('/', async (req, res) => {
     }
 
     let searchCondition = '';
+    let replacements = {};
 
     if (search) {
       searchCondition = `
         AND (
-          LOWER(p.name) LIKE LOWER('%${search}%')
-          OR LOWER(p.sku) LIKE LOWER('%${search}%')
+          LOWER(p.name) LIKE LOWER(:search)
+          OR LOWER(p.sku) LIKE LOWER(:search)
+          OR LOWER(p.category) LIKE LOWER(:search)
         )
       `;
+      replacements.search = `%${search}%`;
     }
 
     let activeCondition = '';
@@ -69,7 +72,10 @@ router.get('/', async (req, res) => {
       ${stockCondition}
       ${searchCondition}
       ORDER BY i.quantity ASC
-    `, { type: sequelize.QueryTypes.SELECT });
+    `, {
+      replacements,
+      type: sequelize.QueryTypes.SELECT
+    });
 
     res.json({
       success: true,

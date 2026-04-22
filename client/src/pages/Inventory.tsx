@@ -109,19 +109,39 @@ export default function Inventory() {
 
       {/*items based on the stocks*/}
       <div className="grid grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-lg p-4 shadow">
+        <div
+          onClick={() => setFilter('all')}
+          className={`cursor-pointer rounded-lg p-4 shadow border ${
+            filter === 'all' ? 'ring-2 ring-primary' : ''
+          }`}
+        >
           <p className="text-sm text-gray-600">Total Items</p>
           <p className="text-2xl font-bold">{stats.total}</p>
         </div>
-        <div className="bg-red-50 rounded-lg p-4 shadow">
+        <div
+          onClick={() => setFilter('low')}
+          className={`cursor-pointer bg-red-50 rounded-lg p-4 shadow border ${
+            filter === 'low' ? 'ring-2 ring-red-500' : ''
+          }`}
+        >
           <p className="text-sm text-red-700">Low Stock</p>
           <p className="text-2xl font-bold text-red-600">{stats.low}</p>
         </div>
-        <div className="bg-yellow-50 rounded-lg p-4 shadow">
+        <div
+          onClick={() => setFilter('medium')}
+          className={`cursor-pointer bg-yellow-50 rounded-lg p-4 shadow border ${
+            filter === 'medium' ? 'ring-2 ring-yellow-500' : ''
+          }`}
+        >
           <p className="text-sm text-yellow-700">Medium Stock</p>
           <p className="text-2xl font-bold text-yellow-600">{stats.medium}</p>
         </div>
-        <div className="bg-green-50 rounded-lg p-4 shadow">
+        <div
+          onClick={() => setFilter('high')}
+          className={`cursor-pointer bg-green-50 rounded-lg p-4 shadow border ${
+            filter === 'high' ? 'ring-2 ring-green-500' : ''
+          }`}
+        >
           <p className="text-sm text-green-700">High Stock</p>
           <p className="text-2xl font-bold text-green-600">{stats.high}</p>
         </div>
@@ -130,47 +150,16 @@ export default function Inventory() {
       <div className="mb-4">
         <input
           type="text"
-          placeholder="Search by product name or SKU..."
+          placeholder="Search by product name, SKU, or category..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full px-4 py-2 border rounded-lg"
+          className="
+            w-full px-4 py-2 rounded-lg
+            border-2 border-gray-400
+            focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary
+            transition
+          "
         />
-      </div>
-
-      {/*filter buttons based on stocks*/}
-      <div className="flex gap-3 mb-6">
-        <button
-          onClick={() => setFilter('all')}
-          className={`px-4 py-2 rounded-lg font-medium ${
-            filter === 'all' ? 'bg-primary text-white' : 'bg-white text-gray-700'
-          }`}
-        >
-          All ({stats.total})
-        </button>
-        <button
-          onClick={() => setFilter('low')}
-          className={`px-4 py-2 rounded-lg font-medium ${
-            filter === 'low' ? 'bg-red-600 text-white' : 'bg-white text-red-600'
-          }`}
-        >
-          Low Stock ({stats.low})
-        </button>
-        <button
-          onClick={() => setFilter('medium')}
-          className={`px-4 py-2 rounded-lg font-medium ${
-            filter === 'medium' ? 'bg-yellow-600 text-white' : 'bg-white text-yellow-600'
-          }`}
-        >
-          Medium Stock ({stats.medium})
-        </button>
-        <button
-          onClick={() => setFilter('high')}
-          className={`px-4 py-2 rounded-lg font-medium ${
-            filter === 'high' ? 'bg-green-600 text-white' : 'bg-white text-green-600'
-          }`}
-        >
-          High Stock ({stats.high})
-        </button>
       </div>
       
       <div className="flex items-center justify-between mb-4">

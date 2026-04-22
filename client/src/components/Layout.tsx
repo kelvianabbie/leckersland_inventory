@@ -58,21 +58,28 @@ export default function Layout() {
         </div>
 
         <nav className="mt-6 px-4">
-          {navigation.map((item) => (
-            <Link
-              key={item.name}
-              to={item.href}
-              onClick={() => setSidebarOpen(false)} // close on mobile click
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg mb-2 transition-colors ${
-                location.pathname === item.href
-                  ? 'bg-primary text-white'
-                  : 'text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              <span className="text-xl">{item.icon}</span>
-              <span className="font-medium">{item.name}</span>
-            </Link>
-          ))}
+          {navigation.map((item) => {
+            const isActive =
+              item.href === '/'
+                ? location.pathname === '/'
+                : location.pathname.startsWith(item.href);
+
+            return (
+              <Link
+                key={item.name}
+                to={item.href}
+                onClick={() => setSidebarOpen(false)}
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg mb-2 transition-colors ${
+                  isActive
+                    ? 'bg-primary text-white'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <span className="text-xl">{item.icon}</span>
+                <span className="font-medium">{item.name}</span>
+              </Link>
+            );
+          })}
         </nav>
       </div>
 
