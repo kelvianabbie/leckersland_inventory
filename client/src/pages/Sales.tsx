@@ -34,10 +34,11 @@ export default function Sales() {
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [price, setPrice] = useState<string>(''); // string empty is allowed
   const [ref, setRef] = useState<string>('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   // Filter state
   const [statusFilter, setStatusFilter] = useState<SaleStatus>('all');
-  const [seasonFilter, setSeasonFilter] = useState<Season | 'all'>('all');
   const [search, setSearch] = useState('');
 
   // Form state
@@ -53,7 +54,7 @@ export default function Sales() {
 
   useEffect(() => {
     loadData();
-  }, [statusFilter, seasonFilter, page]);
+  }, [statusFilter, page]);
 
   const loadData = async () => {
     try {
@@ -62,10 +63,6 @@ export default function Sales() {
 
       if (statusFilter !== 'all') {
         salesParams.status = statusFilter;
-      }
-
-      if (seasonFilter !== 'all') {
-        salesParams.season = seasonFilter;
       }
 
       const [customersRes, inventoryRes, filteredSalesRes, allSalesRes] =
@@ -206,10 +203,6 @@ export default function Sales() {
       filtered = filtered.filter(s => s.status === statusFilter);
     }
 
-    if (seasonFilter !== 'all') {
-      filtered = filtered.filter(s => s.season === seasonFilter);
-    }
-
     if (search.trim()) {
       const searchTerm = search.toLowerCase();
       filtered = filtered.filter(sale => {
@@ -222,6 +215,18 @@ export default function Sales() {
           productName.includes(searchTerm)
         );
       });
+    }
+
+    if (startDate) {
+      filtered = filtered.filter(s =>
+        new Date(s.sale_date) >= new Date(startDate)
+      );
+    }
+
+    if (endDate) {
+      filtered = filtered.filter(s =>
+        new Date(s.sale_date) <= new Date(endDate + 'T23:59:59')
+      );
     }
 
     return filtered;
@@ -478,61 +483,41 @@ export default function Sales() {
               Sales Status
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white rounded-lg p-4 shadow">
+              <div
+                onClick={() => { setStatusFilter('all'); setPage(1); }}
+                className={`cursor-pointer rounded-lg p-4 shadow border ${
+                  statusFilter === 'all' ? 'ring-2 ring-primary' : ''
+                }`}
+              >
                 <p className="text-sm text-gray-600">Total Sales</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {stats.total}
-                </p>
+                <p className="text-2xl font-bold">{stats.total}</p>
               </div>
-              <div className="bg-yellow-50 rounded-lg p-4 shadow">
+              <div
+                onClick={() => { setStatusFilter('pending'); setPage(1); }}
+                className={`cursor-pointer bg-yellow-50 rounded-lg p-4 shadow border ${
+                  statusFilter === 'pending' ? 'ring-2 ring-yellow-500' : ''
+                }`}
+              >
                 <p className="text-sm text-yellow-700">Pending</p>
-                <p className="text-2xl font-bold text-yellow-600">
-                  {stats.pending}
-                </p>
+                <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
               </div>
-              <div className="bg-green-50 rounded-lg p-4 shadow">
+              <div
+                onClick={() => { setStatusFilter('completed'); setPage(1); }}
+                className={`cursor-pointer bg-green-50 rounded-lg p-4 shadow border ${
+                  statusFilter === 'completed' ? 'ring-2 ring-green-500' : ''
+                }`}
+              >
                 <p className="text-sm text-green-700">Completed</p>
-                <p className="text-2xl font-bold text-green-600">
-                  {stats.completed}
-                </p>
+                <p className="text-2xl font-bold text-green-600">{stats.completed}</p>
               </div>
-              <div className="bg-red-50 rounded-lg p-4 shadow">
+              <div
+                onClick={() => { setStatusFilter('cancelled'); setPage(1); }}
+                className={`cursor-pointer bg-red-50 rounded-lg p-4 shadow border ${
+                  statusFilter === 'cancelled' ? 'ring-2 ring-red-500' : ''
+                }`}
+              >
                 <p className="text-sm text-red-700">Canceled</p>
-                <p className="text-2xl font-bold text-red-600">
-                  {stats.cancelled}
-                </p>
-              </div>
-            </div>
-          </div>
-          {/* ================= SEASON SECTION ================= */}
-          <div>
-            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
-              Season Breakdown
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-emerald-100 rounded-lg p-4 shadow">
-                <p className="text-sm text-emerald-700">Spring</p>
-                <p className="text-2xl font-bold text-emerald-600">
-                  {stats.spring}
-                </p>
-              </div>
-              <div className="bg-blue-100 rounded-lg p-4 shadow">
-                <p className="text-sm text-blue-700">Summer</p>
-                <p className="text-2xl font-bold text-blue-600">
-                  {stats.summer}
-                </p>
-              </div>
-              <div className="bg-orange-100 rounded-lg p-4 shadow">
-                <p className="text-sm text-orange-700">Fall</p>
-                <p className="text-2xl font-bold text-orange-600">
-                  {stats.fall}
-                </p>
-              </div>
-              <div className="bg-purple-100 rounded-lg p-4 shadow">
-                <p className="text-sm text-purple-700">Winter</p>
-                <p className="text-2xl font-bold text-purple-600">
-                  {stats.winter}
-                </p>
+                <p className="text-2xl font-bold text-red-600">{stats.cancelled}</p>
               </div>
             </div>
           </div>
@@ -551,96 +536,28 @@ export default function Sales() {
             />
           </div>
 
-          {/* Status Filter */}
-          <div className="flex gap-3 flex-wrap">
-            <span className="text-sm font-medium text-gray-700 self-center">Status:</span>
+          <div className="flex gap-4 flex-wrap">
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="px-4 py-2 border rounded-lg"
+            />
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="px-4 py-2 border rounded-lg"
+            />
             <button
-              type="button"
-              onClick={() => {setStatusFilter('all'); setPage(1)}}
-              className={`px-4 py-2 rounded-lg font-medium ${
-                statusFilter === 'all' ? 'bg-primary text-white' : 'bg-white text-gray-700'
-              }`}
+              onClick={() => {
+                setStartDate('');
+                setEndDate('');
+                setPage(1);
+              }}
+              className="px-4 py-2 bg-gray-200 rounded"
             >
-              All ({stats.total})
-            </button>
-            <button
-              type="button"
-              onClick={() => {setStatusFilter('pending'); setPage(1)}}
-              className={`px-4 py-2 rounded-lg font-medium ${
-                statusFilter === 'pending' ? 'bg-yellow-600 text-white' : 'bg-white text-yellow-600'
-              }`}
-            >
-              Pending ({stats.pending})
-            </button>
-            <button
-              type="button"
-              onClick={() => {setStatusFilter('completed'); setPage(1)}}
-              className={`px-4 py-2 rounded-lg font-medium ${
-                statusFilter === 'completed' ? 'bg-green-600 text-white' : 'bg-white text-green-600'
-              }`}
-            >
-              Completed ({stats.completed})
-            </button>
-            <button
-              type="button"
-              onClick={() => {setStatusFilter('cancelled'); setPage(1)}}
-              className={`px-4 py-2 rounded-lg font-medium ${
-                statusFilter === 'cancelled'
-                  ? 'bg-red-600 text-white'
-                  : 'bg-white text-red-600'
-              }`}
-            >
-              Canceled ({stats.cancelled})
-            </button>
-          </div>
-
-          {/* Season Filter */}
-          <div className="flex gap-3 flex-wrap">
-            <span className="text-sm font-medium text-gray-700 self-center">Season:</span>
-            <button
-              type="button"
-              onClick={() => {setSeasonFilter('all'); setPage(1)}}
-              className={`px-4 py-2 rounded-lg font-medium ${
-                seasonFilter === 'all' ? 'bg-primary text-white' : 'bg-white text-gray-700'
-              }`}
-            >
-              All
-            </button>
-            <button
-              type="button"
-              onClick={() => {setSeasonFilter('spring'); setPage(1)}}
-              className={`px-4 py-2 rounded-lg font-medium ${
-                seasonFilter === 'spring' ? 'bg-emerald-600 text-white' : 'bg-white text-emerald-600'
-              }`}
-            >
-              Spring
-            </button>
-            <button
-              type="button"
-              onClick={() => {setSeasonFilter('summer'); setPage(1)}}
-              className={`px-4 py-2 rounded-lg font-medium ${
-                seasonFilter === 'summer' ? 'bg-blue-600 text-white' : 'bg-white text-blue-600'
-              }`}
-            >
-              Summer
-            </button>
-            <button
-              type="button"
-              onClick={() => {setSeasonFilter('fall'); setPage(1)}}
-              className={`px-4 py-2 rounded-lg font-medium ${
-                seasonFilter === 'fall' ? 'bg-orange-600 text-white' : 'bg-white text-orange-600'
-              }`}
-            >
-              Fall
-            </button>
-            <button
-              type="button"
-              onClick={() => {setSeasonFilter('winter'); setPage(1)}}
-              className={`px-4 py-2 rounded-lg font-medium ${
-                seasonFilter === 'winter' ? 'bg-purple-600 text-white' : 'bg-white text-purple-600'
-              }`}
-            >
-              Winter
+              Clear Dates
             </button>
           </div>
         </div>
@@ -658,10 +575,8 @@ export default function Sales() {
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date Created</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Products</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total / Paid</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Season</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Completed Date</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
@@ -686,13 +601,6 @@ export default function Sales() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {new Date(sale.sale_date).toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      {sale.items.map(item => (
-                        <div key={item.product_id}>
-                          {item.product?.name} × {item.quantity}
-                        </div>
-                      ))}
-                    </td>
                     <td className="px-6 py-4 text-sm font-medium text-primary cursor-pointer" 
                       onClick={() => openPaymentModal(sale.id)}
                     >
@@ -701,16 +609,6 @@ export default function Sales() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">{sale.customer?.name || 'N/A'}</div>
                       <div className="text-sm text-gray-500">{sale.customer?.type || ''}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        sale.season === 'spring' ? 'bg-emerald-100 text-emerald-800' :
-                        sale.season === 'summer' ? 'bg-blue-100 text-blue-800' :
-                        sale.season === 'fall' ? 'bg-orange-100 text-orange-800' :
-                        'bg-purple-100 text-purple-800'
-                      }`}>
-                        {sale.season.charAt(0).toUpperCase() + sale.season.slice(1)}
-                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {sale.completed_date
