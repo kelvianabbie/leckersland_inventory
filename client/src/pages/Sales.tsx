@@ -217,16 +217,27 @@ export default function Sales() {
       });
     }
 
+    const toDateOnly = (date: string | Date) => {
+      const d = new Date(date);
+      return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    };
+
     if (startDate) {
-      filtered = filtered.filter(s =>
-        new Date(s.sale_date) >= new Date(startDate)
-      );
+      const start = toDateOnly(startDate);
+
+      filtered = filtered.filter(s => {
+        const sale = toDateOnly(s.sale_date);
+        return sale >= start;
+      });
     }
 
     if (endDate) {
-      filtered = filtered.filter(s =>
-        new Date(s.sale_date) <= new Date(endDate + 'T23:59:59')
-      );
+      const end = toDateOnly(endDate);
+
+      filtered = filtered.filter(s => {
+        const sale = toDateOnly(s.sale_date);
+        return sale <= end;
+      });
     }
 
     return filtered;
@@ -465,7 +476,7 @@ export default function Sales() {
             disabled={submitting}
             className="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-secondary disabled:opacity-50"
           >
-            {submitting ? 'Recording Sale...' : 'Record Sale'}
+            {submitting ? 'Recording Invoice...' : 'Record Invoice'}
           </button>
         </form>
       </div>
@@ -473,14 +484,14 @@ export default function Sales() {
       {/* Sales History */}
       <div className="bg-white rounded-lg shadow">
         <div className="p-6 border-b">
-          <h2 className="text-lg font-semibold">Sales History</h2>
+          <h2 className="text-lg font-semibold">Invoice History</h2>
         </div>
         {/* Stats */}
         <div className="p-6 border-b space-y-8">
           {/* ================= STATUS SECTION ================= */}
           <div>
             <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
-              Sales Status
+              Invoice Status
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div
@@ -489,7 +500,7 @@ export default function Sales() {
                   statusFilter === 'all' ? 'ring-2 ring-primary' : ''
                 }`}
               >
-                <p className="text-sm text-gray-600">Total Sales</p>
+                <p className="text-sm text-gray-600">Total Invoices</p>
                 <p className="text-2xl font-bold">{stats.total}</p>
               </div>
               <div
@@ -532,23 +543,29 @@ export default function Sales() {
               placeholder="Search by customer or product..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+              className="w-full px-4 py-2 rounded-lg border-2 border-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition"
             />
           </div>
 
-          <div className="flex gap-4 flex-wrap">
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="px-4 py-2 border rounded-lg"
-            />
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="px-4 py-2 border rounded-lg"
-            />
+          <div className="flex gap-4 flex-wrap items-end">
+            <div className="flex flex-col">
+              <label className="text-xs text-gray-500 mb-1">From</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="px-4 py-2 border rounded-lg"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="text-xs text-gray-500 mb-1">To</label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="px-4 py-2 border rounded-lg"
+              />
+            </div>
             <button
               onClick={() => {
                 setStartDate('');
