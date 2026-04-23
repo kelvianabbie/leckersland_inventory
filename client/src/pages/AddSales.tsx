@@ -19,6 +19,9 @@ export default function AddSales() {
   const [quantity, setQuantity] = useState<number>(1);
   const [price, setPrice] = useState<string>('');
   const MAX_ITEMS = 11;
+  const [productSearch, setProductSearch] = useState('');
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [highlightIndex, setHighlightIndex] = useState<number>(-1);
 
   useEffect(() => {
     loadData();
@@ -45,6 +48,10 @@ export default function AddSales() {
 
   const availableProducts = inventory.filter(i => i.quantity > 0);
 
+  const filteredProducts = availableProducts.filter(p =>
+    p.product_name.toLowerCase().includes(productSearch.toLowerCase())
+  );
+
   const handleAddToCart = () => {
     if (!selectedProductId || quantity <= 0) return;
 
@@ -55,6 +62,11 @@ export default function AddSales() {
 
     const product = availableProducts.find(p => p.product_id === selectedProductId);
     if (!product) return;
+
+    if (!selectedProductId) {
+      setError('Please select a product from the list');
+      return;
+    }
 
     setCart(prev => {
       const existing = prev.find(i => i.product_id === selectedProductId);
@@ -80,6 +92,7 @@ export default function AddSales() {
 
     setPrice('');
     setSelectedProductId(0);
+    setProductSearch('');
     setQuantity(1);
   };
 
@@ -195,18 +208,78 @@ export default function AddSales() {
         </label>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <select
-            value={selectedProductId}
-            onChange={e => setSelectedProductId(parseInt(e.target.value))}
-            className="px-4 py-2 border rounded-lg"
-          >
-            <option value={0}>Select product</option>
-            {availableProducts.map(p => (
-              <option key={p.product_id} value={p.product_id}>
-                {p.product_name} ({p.quantity} available)
-              </option>
-            ))}
-          </select>
+          <div className="relative">
+            <input onKeyDown={(e) => {
+              if (!showDropdown) return;
+
+              if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                setHighlightIndex(prev =>
+                  Math.min(prev + 1, filteredProducts.length - 1)
+                );
+              }
+
+              if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                setHighlightIndex(prev => Math.max(prev - 1, 0));
+              }
+
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                if (highlightIndex >= 0) {
+                  const selected = filteredProducts[highlightIndex];
+                  if (selected) {
+                    setSelectedProductId(selected.product_id);
+                    setProductSearch(selected.product_name);
+                    setShowDropdown(false);
+                    setHighlightIndex(-1);
+                  }
+                }
+              }
+
+              if (e.key === 'Escape') {
+                setShowDropdown(false);
+              }
+            }}
+              type="text"
+              value={productSearch}
+              onChange={(e) => {
+                setProductSearch(e.target.value);
+                setShowDropdown(true);
+                setHighlightIndex(-1); // reset
+              }}
+              onFocus={() => setShowDropdown(true)}
+              placeholder="Search product..."
+              className="w-full px-4 py-2 border rounded-lg"
+            />
+
+            {showDropdown && productSearch && (
+              <div className="absolute z-10 bg-white border w-full mt-1 rounded-lg shadow max-h-60 overflow-y-auto">
+                {filteredProducts.length === 0 ? (
+                  <div className="p-2 text-sm text-gray-500">No products found</div>
+                ) : (
+                  filteredProducts.map((p, index) => (
+                    <div 
+                      key={p.product_id}
+                      onClick={() => {
+                        setSelectedProductId(p.product_id);
+                        setProductSearch(p.product_name);
+                        setShowDropdown(false);
+                        setHighlightIndex(-1);
+                      }}
+                      className={`px-4 py-2 cursor-pointer ${
+                        index === highlightIndex
+                          ? 'bg-primary text-white'
+                          : 'hover:bg-gray-100'
+                      }`}
+                    >
+                      {p.product_name} ({p.quantity} available)
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
 
           <input
             type="number"
@@ -296,7 +369,7 @@ export default function AddSales() {
           </div>
         )}
 
-        <div className="border-t pt-4 flex justify-between items-center">
+        <div className="border-t pt-4 flex items-center gap-3">
           <span className="text-lg font-medium text-gray-700">
             Subtotal
           </span>
