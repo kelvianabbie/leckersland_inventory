@@ -76,7 +76,7 @@ router.get('/:id', async (req, res) => {
       width: 140, // adjust based on visual balance
     });
 
-    currentY += 35;
+    currentY += 45;
 
     doc
       .font('Helvetica')
@@ -167,7 +167,7 @@ router.get('/:id', async (req, res) => {
       TABLE START POSITION
     ========================= */
 
-    const tableTop = currentY + 40;
+    const tableTop = currentY + 30;
 
     let y = drawTableHeader(doc, tableTop);
 
