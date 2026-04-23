@@ -45,6 +45,7 @@ router.get('/:id', async (req, res) => {
     const fontRegular = path.join(__dirname, '../fonts/NotoSans-Regular.ttf');
     const fontBold = path.join(__dirname, '../fonts/NotoSans-Bold.ttf');
     const fontCJK = path.join(__dirname, '../fonts/NotoSansCJKsc-Regular.otf');
+    const logoPath = path.join(__dirname, '../assets/leckersland_logo.png');
 
     doc.registerFont('Custom', fontRegular);
     doc.registerFont('Custom-Bold', fontBold);
@@ -71,12 +72,11 @@ router.get('/:id', async (req, res) => {
       HEADER
     ========================= */
 
-    doc
-      .font('Helvetica-Bold')
-      .fontSize(20)
-      .text('LECKERSLAND', leftX, currentY);
+    doc.image(logoPath, leftX, currentY, {
+      width: 180, // adjust based on visual balance
+    });
 
-    currentY += 25;
+    currentY += 75;
 
     doc
       .font('Helvetica')
