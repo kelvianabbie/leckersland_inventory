@@ -76,7 +76,7 @@ router.get('/:id', async (req, res) => {
       width: 140, // adjust based on visual balance
     });
 
-    currentY += 75;
+    currentY += 35;
 
     doc
       .font('Helvetica')
