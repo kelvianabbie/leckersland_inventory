@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { salesAPI, customersAPI, inventoryAPI } from '../utils/api';
 import { Customer, InventoryItem } from '../types';
 import Alert from '../components/Alert';
+import { useNavigate } from 'react-router-dom';
 
 export default function AddSales() {
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -40,13 +41,15 @@ export default function AddSales() {
     }
   };
 
+  const navigate = useNavigate();
+
   const availableProducts = inventory.filter(i => i.quantity > 0);
 
   const handleAddToCart = () => {
     if (!selectedProductId || quantity <= 0) return;
 
     if (cart.length >= MAX_ITEMS) {
-      setError(`Max ${MAX_ITEMS} products`);
+      setError(`Max ${MAX_ITEMS} products allowed`);
       return;
     }
 
@@ -84,7 +87,7 @@ export default function AddSales() {
     e.preventDefault();
 
     if (!selectedCustomer || cart.length === 0) {
-      setError('Customer + product required');
+      setError('Customer and at least one product required');
       return;
     }
 
@@ -102,13 +105,14 @@ export default function AddSales() {
         }))
       });
 
-      setSuccess('Sale created!');
-      setCart([]);
-      setSelectedCustomer(0);
-      setSaleDate('');
-      setRef('');
+      setSuccess('Sale created! Redirecting back to invoice page...');
+
+      // Optional: slight delay so user sees feedback
+      setTimeout(() => {
+        navigate('/sales');
+      }, 800);
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed');
+      setError(err.response?.data?.error || 'Failed to record sale');
     } finally {
       setSubmitting(false);
     }
@@ -117,95 +121,182 @@ export default function AddSales() {
   if (loading) return <p className="p-6">Loading...</p>;
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Create Sale</h1>
+  <div>
+    <div className="mb-6">
+      <h1 className="text-2xl font-bold mb-2">💰 Generate Invoice</h1>
+      <p className="text-gray-600">
+        Log sales to track inventory and customer purchases
+      </p>
+    </div>
 
+    <div className="bg-white rounded-lg shadow p-6">
       {error && <Alert type="error">{error}</Alert>}
       {success && <Alert type="success">{success}</Alert>}
 
       <form onSubmit={handleSubmit} className="space-y-6">
 
         {/* Customer */}
-        <select
-          value={selectedCustomer}
-          onChange={(e) => setSelectedCustomer(parseInt(e.target.value))}
-          className="w-full border px-4 py-2 rounded"
-        >
-          <option value={0}>Select customer</option>
-          {customers.map(c => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Customer *
+          </label>
+          <select
+            value={selectedCustomer}
+            onChange={(e) => setSelectedCustomer(parseInt(e.target.value))}
+            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+          >
+            <option value={0}>Select a customer</option>
+            {customers.map(c => (
+              <option key={c.id} value={c.id}>
+                {c.name} ({c.type})
+              </option>
+            ))}
+          </select>
+        </div>
 
-        {/* Product add */}
-        <div className="grid grid-cols-4 gap-4">
+        {/* Add Product */}
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Add Product * (Max 11) ({cart.length}/11 items added)
+        </label>
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <select
             value={selectedProductId}
             onChange={e => setSelectedProductId(parseInt(e.target.value))}
-            className="border px-2"
+            className="px-4 py-2 border rounded-lg"
           >
-            <option value={0}>Product</option>
+            <option value={0}>Select product</option>
             {availableProducts.map(p => (
               <option key={p.product_id} value={p.product_id}>
-                {p.product_name}
+                {p.product_name} ({p.quantity} available)
               </option>
             ))}
           </select>
 
           <input
             type="number"
+            min="1"
             value={quantity}
-            onChange={e => setQuantity(parseInt(e.target.value))}
-            className="border px-2"
+            onChange={e => setQuantity(parseInt(e.target.value) || 1)}
+            className="px-4 py-2 border rounded-lg"
           />
 
           <input
             type="number"
-            placeholder="Price"
+            placeholder="Custom price (optional)"
             value={price}
             onChange={e => setPrice(e.target.value)}
-            className="border px-2"
+            className="px-4 py-2 border rounded-lg"
           />
 
-          <button type="button" onClick={handleAddToCart} className="bg-blue-500 text-white">
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            disabled={cart.length >= 11}
+            className="bg-primary text-white rounded-lg"
+          >
             Add
           </button>
         </div>
 
-        {/* Cart */}
-        {cart.map(item => (
-          <div key={item.product_id} className="flex justify-between border p-2">
-            <span>{item.name}</span>
-            <span>{item.quantity}</span>
+        {/* Cart Table */}
+        {cart.length > 0 && (
+          <div className="mt-4 border rounded-lg">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-2 text-left">Product</th>
+                  <th className="px-4 py-2 text-left">Qty</th>
+                  <th className="px-4 py-2 text-left">Price</th>
+                  <th className="px-4 py-2 text-left">Remove</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cart.map(item => (
+                  <tr key={item.product_id}>
+                    <td className="px-4 py-2">{item.name}</td>
+                    <td className="px-4 py-2">{item.quantity}</td>
+                    <td className="px-4 py-2">
+                      <input
+                        type="number"
+                        value={item.unit_price ?? ''}
+                        placeholder="default"
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setCart(prev =>
+                            prev.map(i =>
+                              i.product_id === item.product_id
+                                ? {
+                                    ...i,
+                                    unit_price: value === '' ? null : parseFloat(value)
+                                  }
+                                : i
+                            )
+                          );
+                        }}
+                        className="w-24 border rounded px-2 py-1"
+                      />
+                    </td>
+                    <td className="px-4 py-2">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setCart(prev =>
+                            prev.filter(i => i.product_id !== item.product_id)
+                          )
+                        }
+                        className="text-red-600 text-xs"
+                      >
+                        Remove
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        ))}
+        )}
 
         {/* Date */}
-        <input
-          type="datetime-local"
-          value={saleDate}
-          onChange={(e) => setSaleDate(e.target.value)}
-          className="w-full border px-4 py-2"
-        />
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Date (Optional)
+          </label>
+          <input
+            type="datetime-local"
+            value={saleDate}
+            onChange={(e) => setSaleDate(e.target.value)}
+            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Leave empty to record sale at current time
+          </p>
+        </div>
 
         {/* Ref */}
-        <input
-          type="text"
-          value={ref}
-          onChange={(e) => setRef(e.target.value)}
-          placeholder="Reference"
-          className="w-full border px-4 py-2"
-        />
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Ref
+          </label>
+          <input
+            type="text"
+            value={ref}
+            onChange={(e) => setRef(e.target.value)}
+            placeholder="e.g. PO-123, WhatsApp order, etc."
+            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+          />
+        </div>
 
+        {/* Submit */}
         <button
           type="submit"
-          className="w-full bg-primary text-white py-3 rounded"
+          disabled={submitting}
+          className="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-secondary disabled:opacity-50"
         >
-          {submitting ? 'Saving...' : 'Create Sale'}
+          {submitting ? 'Recording Invoice...' : 'Record Invoice'}
         </button>
       </form>
     </div>
-  );
+  </div>
+);
 }

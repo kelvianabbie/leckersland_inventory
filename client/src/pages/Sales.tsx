@@ -13,14 +13,11 @@ export default function Sales() {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [sales, setSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [cancelSaleId, setCancelSaleId] = useState<number | null>(null);
   const [cancelLoading, setCancelLoading] = useState(false);
   const [allSales, setAllSales] = useState<Sale[]>([]);
-  const [selectedCustomer, setSelectedCustomer] = useState<number>(0);
-  const [saleDate, setSaleDate] = useState<string>('');
   const [page, setPage] = useState(1);
   const limit = 20;
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://leckersland-inventory.onrender.com/api';
@@ -32,25 +29,12 @@ export default function Sales() {
   const [paymentHistory, setPaymentHistory] = useState<any[]>([]);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
-  const [price, setPrice] = useState<string>(''); // string empty is allowed
-  const [ref, setRef] = useState<string>('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
   // Filter state
   const [statusFilter, setStatusFilter] = useState<SaleStatus>('all');
   const [search, setSearch] = useState('');
-
-  // Form state
-  const [cart, setCart] = useState<{
-    product_id: number;
-    name: string;
-    unit_price: number | null;
-    quantity: number;
-  }[]>([]);
-
-  const [selectedProductId, setSelectedProductId] = useState<number>(0);
-  const [quantity, setQuantity] = useState<number>(1);
 
   useEffect(() => {
     loadData();
@@ -88,90 +72,6 @@ export default function Sales() {
   };
 
   const navigate = useNavigate();
-
-  const MAX_ITEMS = 11;
-
-  const handleAddToCart = () => {
-    if (!selectedProductId || quantity <= 0) return;
-
-    if (cart.length >= MAX_ITEMS) {
-      setError(`Maximum ${MAX_ITEMS} products allowed per sale (invoice limit)`);
-      return;
-    }
-
-    const product = availableProducts.find(
-      p => p.product_id === selectedProductId
-    );
-
-    if (!product) return;
-
-    setCart(prev => {
-      const existing = prev.find(i => i.product_id === selectedProductId);
-
-      if (!existing && prev.length >= MAX_ITEMS) {
-        setError(`Maximum ${MAX_ITEMS} products allowed per sale`);
-        return prev;
-      }
-
-      if (existing) {
-        return prev.map(i =>
-          i.product_id === selectedProductId
-            ? { ...i, quantity: i.quantity + quantity }
-            : i
-        );
-      }
-
-      return [
-        ...prev,
-        {
-          product_id: selectedProductId,
-          name: product.product_name,
-          unit_price: price === '' ? null : parseFloat(price),
-          quantity
-        }
-      ];
-    });
-
-    setPrice('');
-    setSelectedProductId(0);
-    setQuantity(1);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!selectedCustomer || cart.length === 0) {
-      setError('Customer and at least one product required');
-      return;
-    }
-
-    try {
-      setSubmitting(true);
-      setError(null);
-
-      await salesAPI.create({
-        customer_id: selectedCustomer,
-        sale_date: saleDate || undefined,
-        ref: ref || undefined,
-        items: cart.map(item => ({
-          product_id: item.product_id,
-          quantity: item.quantity,
-          unit_price: item.unit_price // optional field
-        }))
-      });
-
-      setSuccess('Sale recorded successfully!');
-      setCart([]);
-      setSelectedCustomer(0);
-      setSaleDate('');
-      setRef('');
-      await loadData();
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to record sale');
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   const handleUpdateStatus = async (saleId: number, status: 'pending' | 'completed' | 'cancelled') => {
     try {
@@ -339,157 +239,6 @@ export default function Sales() {
         >
           + Create Sale
         </button>
-      </div>
-
-      {/* Record Sale Form */}
-      <div className="bg-white rounded-lg shadow p-6 mb-8">
-        {error && <Alert type="error">{error}</Alert>}
-        {success && <Alert type="success">{success}</Alert>}
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Customer *</label>
-            <select
-              value={selectedCustomer}
-              onChange={(e) => setSelectedCustomer(parseInt(e.target.value))}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
-              required
-            >
-              <option value={0}>Select a customer</option>
-              {customers.map(customer => (
-                <option key={customer.id} value={customer.id}>
-                  {customer.name} ({customer.type})
-                </option>
-              ))}
-            </select>
-          </div>
-          
-          <label className="block text-sm font-medium text-gray-700 mb-2">Add Product * (Max 11) ({cart.length}/11 items added)</label>
-          
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <select
-              value={selectedProductId}
-              onChange={e => setSelectedProductId(parseInt(e.target.value))}
-              className="px-4 py-2 border rounded-lg"
-            >
-              <option value={0}>Select product</option>
-              {availableProducts.map(item => (
-                <option key={item.product_id} value={item.product_id}>
-                  {item.product_name} ({item.quantity} available)
-                </option>
-              ))}
-            </select>
-
-            <input
-              type="number"
-              min="1"
-              value={quantity}
-              onChange={e => setQuantity(parseInt(e.target.value) || 1)}
-              className="px-4 py-2 border rounded-lg"
-            />
-
-            <input
-              type="number"
-              placeholder="Custom price (optional)"
-              value={price}
-              onChange={e => setPrice(e.target.value)}
-              className="px-4 py-2 border rounded-lg"
-            />
-
-            <button
-              type="button"
-              onClick={handleAddToCart}
-              disabled={cart.length >= 11}
-              className="bg-primary text-white rounded-lg"
-            >
-              Add
-            </button>
-          </div>
-
-          {cart.length > 0 && (
-            <div className="mt-4 border rounded-lg">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-2 text-left">Product</th>
-                    <th className="px-4 py-2 text-left">Qty</th>
-                    <th className="px-4 py-2 text-left">Price</th>
-                    <th className="px-4 py-2 text-left">Remove</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {cart.map(item => (
-                    <tr key={item.product_id}>
-                      <td className="px-4 py-2">{item.name}</td>
-                      <td className="px-4 py-2">{item.quantity}</td>
-                      <td className="px-4 py-2">
-                        <input
-                          type="number"
-                          value={item.unit_price ?? ''}
-                          placeholder="default"
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setCart(prev =>
-                              prev.map(i =>
-                                i.product_id === item.product_id
-                                  ? { ...i, unit_price: value === '' ? null : parseFloat(value) }
-                                  : i
-                              )
-                            );
-                          }}
-                          className="w-24 border rounded px-2 py-1"
-                        />
-                      </td>
-                      <td className="px-4 py-2">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setCart(prev =>
-                              prev.filter(i => i.product_id !== item.product_id)
-                            )
-                          }
-                          className="text-red-600 text-xs"
-                        >
-                          Remove
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Date (Optional)</label>
-            <input
-              type="datetime-local"
-              value={saleDate}
-              onChange={(e) => setSaleDate(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
-            />
-            <p className="text-xs text-gray-500 mt-1">Leave empty to record sale at current time</p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Ref</label>
-            <input
-              type="text"
-              value={ref}
-              onChange={(e) => setRef(e.target.value)}
-              placeholder="e.g. PO-123, WhatsApp order, etc."
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-secondary disabled:opacity-50"
-          >
-            {submitting ? 'Recording Invoice...' : 'Record Invoice'}
-          </button>
-        </form>
       </div>
 
       {/* Sales History */}
