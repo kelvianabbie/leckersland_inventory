@@ -73,7 +73,7 @@ router.get('/:id', async (req, res) => {
     ========================= */
 
     doc.image(logoPath, leftX, currentY, {
-      width: 180, // adjust based on visual balance
+      width: 140, // adjust based on visual balance
     });
 
     currentY += 75;
