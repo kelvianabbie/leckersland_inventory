@@ -87,11 +87,10 @@ export default function SaleDetail() {
       {/* TOP HEADER */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <h1 className="text-2xl font-bold">
-          Sale Detail #{sale.id}
+          Invoice Detail #{sale.id}
         </h1>
 
         <div className="flex flex-wrap items-center gap-4">
-
           {/* Download */}
           <button
             onClick={handleDownloadInvoice}
@@ -99,7 +98,6 @@ export default function SaleDetail() {
           >
             Download Invoice
           </button>
-
           {/* Credit Memo */}
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600">Credit Memo:</span>
@@ -123,38 +121,31 @@ export default function SaleDetail() {
 
       {/* MAIN CARD */}
       <div className="bg-white rounded-lg shadow p-6 space-y-6">
-
         {/* INFO GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-
           <div>
             <p className="text-gray-500">Date</p>
             <p className="font-medium">
               {new Date(sale.sale_date).toLocaleString()}
             </p>
           </div>
-
           <div>
             <p className="text-gray-500">Customer</p>
             <p className="font-medium">{sale.customer?.name || '-'}</p>
           </div>
-
           <div>
             <p className="text-gray-500">Status</p>
             <p className="capitalize">{sale.status}</p>
           </div>
-
           <div>
             <p className="text-gray-500">Ref</p>
             <p>{sale.ref || '-'}</p>
           </div>
-
         </div>
 
         {/* ITEMS TABLE */}
         <div className="overflow-x-auto">
           <table className="w-full min-w-[600px] text-sm">
-
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-4 py-2 text-left">Product</th>
@@ -163,7 +154,6 @@ export default function SaleDetail() {
                 <th className="px-4 py-2 text-center">Total</th>
               </tr>
             </thead>
-
             <tbody className="divide-y">
               {sale.items.map(item => (
                 <tr key={item.product_id}>
@@ -184,23 +174,16 @@ export default function SaleDetail() {
 
         {/* TOTALS */}
         <div className="text-left space-y-1">
-
           <p>Subtotal: ${subtotal.toFixed(2)}</p>
-
           <p>Credit: ${sale.credit_memo?.toFixed(2) || '0.00'}</p>
-
           <p className="text-lg font-bold">
             Total Price: ${total.toFixed(2)}
           </p>
-
           <p>
             Total Paid: ${sale.total_paid?.toFixed(2) || '0.00'}
           </p>
-
         </div>
-
       </div>
-
     </div>
   );
 }

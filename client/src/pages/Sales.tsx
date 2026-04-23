@@ -325,9 +325,20 @@ export default function Sales() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">💰 Generate Invoice</h1>
-        <p className="text-gray-600">Log sales to track inventory and customer purchases</p>
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold mb-2">💰 Generate Invoice</h1>
+          <p className="text-gray-600">
+            Log sales to track inventory and customer purchases
+          </p>
+        </div>
+
+        <button
+          onClick={() => navigate('/sales/add')}
+          className="bg-primary text-white px-4 py-2 rounded-lg"
+        >
+          + Create Sale
+        </button>
       </div>
 
       {/* Record Sale Form */}
@@ -595,7 +606,7 @@ export default function Sales() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total / Paid</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Completed Date</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Payment Status</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                 </tr>
               </thead>
