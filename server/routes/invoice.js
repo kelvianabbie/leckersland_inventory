@@ -76,7 +76,7 @@ router.get('/:id', async (req, res) => {
       width: 140, // adjust based on visual balance
     });
 
-    currentY += 45;
+    currentY += 50;
 
     doc
       .font('Helvetica')
@@ -167,7 +167,7 @@ router.get('/:id', async (req, res) => {
       TABLE START POSITION
     ========================= */
 
-    const tableTop = currentY + 30;
+    const tableTop = currentY + 25;
 
     let y = drawTableHeader(doc, tableTop);
 
@@ -247,7 +247,7 @@ router.get('/:id', async (req, res) => {
       TERMS + SIGNATURE SECTION
     ========================= */
 
-    let sectionY = y + 100;
+    let sectionY = y + 90;
 
     doc
       .font('Helvetica')
