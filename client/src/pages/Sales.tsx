@@ -227,7 +227,7 @@ export default function Sales() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold mb-2">💰 Generate Invoice</h1>
+          <h1 className="text-2xl font-bold mb-2">💰 Invoice</h1>
           <p className="text-gray-600">
             Log sales to track inventory and customer purchases
           </p>

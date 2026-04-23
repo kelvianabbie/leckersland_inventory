@@ -120,6 +120,11 @@ export default function AddSales() {
 
   if (loading) return <p className="p-6">Loading...</p>;
 
+  const subtotal = cart.reduce((sum, item) => {
+    const price = item.unit_price || 0;
+    return sum + price * item.quantity;
+  }, 0);
+
   return (
   <div>
     <div className="mb-6">
@@ -134,6 +139,36 @@ export default function AddSales() {
       {success && <Alert type="success">{success}</Alert>}
 
       <form onSubmit={handleSubmit} className="space-y-6">
+
+        {/* Date */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Date (Optional)
+          </label>
+          <input
+            type="datetime-local"
+            value={saleDate}
+            onChange={(e) => setSaleDate(e.target.value)}
+            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Leave empty to record sale at current time
+          </p>
+        </div>
+
+        {/* Ref */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Ref
+          </label>
+          <input
+            type="text"
+            value={ref}
+            onChange={(e) => setRef(e.target.value)}
+            placeholder="e.g. PO-123, WhatsApp order, etc."
+            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
+          />
+        </div>
 
         {/* Customer */}
         <div>
@@ -208,6 +243,7 @@ export default function AddSales() {
                   <th className="px-4 py-2 text-left">Product</th>
                   <th className="px-4 py-2 text-left">Qty</th>
                   <th className="px-4 py-2 text-left">Price</th>
+                  <th className="px-4 py-2 text-left">Total</th>
                   <th className="px-4 py-2 text-left">Remove</th>
                 </tr>
               </thead>
@@ -238,6 +274,9 @@ export default function AddSales() {
                       />
                     </td>
                     <td className="px-4 py-2">
+                      ${( (item.unit_price || 0) * item.quantity ).toFixed(2)}
+                    </td>
+                    <td className="px-4 py-2">
                       <button
                         type="button"
                         onClick={() =>
@@ -257,34 +296,13 @@ export default function AddSales() {
           </div>
         )}
 
-        {/* Date */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Date (Optional)
-          </label>
-          <input
-            type="datetime-local"
-            value={saleDate}
-            onChange={(e) => setSaleDate(e.target.value)}
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            Leave empty to record sale at current time
-          </p>
-        </div>
-
-        {/* Ref */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Ref
-          </label>
-          <input
-            type="text"
-            value={ref}
-            onChange={(e) => setRef(e.target.value)}
-            placeholder="e.g. PO-123, WhatsApp order, etc."
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary"
-          />
+        <div className="border-t pt-4 flex justify-between items-center">
+          <span className="text-lg font-medium text-gray-700">
+            Subtotal
+          </span>
+          <span className="text-xl font-bold text-primary">
+            ${subtotal.toFixed(2)}
+          </span>
         </div>
 
         {/* Submit */}
