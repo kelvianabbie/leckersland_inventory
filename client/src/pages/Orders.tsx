@@ -14,7 +14,9 @@ export default function Orders() {
   const [allOrders, setAllOrders] = useState<PurchaseOrder[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [filter, setFilter] = useState<OrderStatus>('all');
+  const [statusFilter, setStatusFilter] = useState<OrderStatus>('all');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [orderToCancel, setOrderToCancel] = useState<number | null>(null);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
@@ -32,7 +34,7 @@ export default function Orders() {
 
   useEffect(() => {
     loadData();
-  }, [page, filter]);
+  }, [page, statusFilter]);
 
   const loadData = async () => {
     try {
@@ -41,7 +43,7 @@ export default function Orders() {
       ordersAPI.getAll({
         page,
         limit,
-        status: filter === 'all' ? undefined : filter
+        status: statusFilter === 'all' ? undefined : statusFilter
       }),
       inventoryAPI.getAll(),
       ordersAPI.getAll({ limit: 1000 }), // load all orders for stats
@@ -182,6 +184,33 @@ export default function Orders() {
 
   if (loading) return <Loading />;
 
+  const getFilteredOrders = () => {
+    let filtered = [...orders];
+
+    const toDateOnly = (date: string | Date) => {
+      const d = new Date(date);
+      return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    };
+
+    if (startDate) {
+      const start = toDateOnly(startDate);
+      filtered = filtered.filter(o => {
+        const created = toDateOnly(o.created_at);
+        return created >= start;
+      });
+    }
+
+    if (endDate) {
+      const end = toDateOnly(endDate);
+      filtered = filtered.filter(o => {
+        const created = toDateOnly(o.created_at);
+        return created <= end;
+      });
+    }
+
+    return filtered;
+  };
+
   return (
     <div>
       <div className="mb-6">
@@ -194,58 +223,79 @@ export default function Orders() {
 
       {/*total order based on status*/}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-lg p-4 shadow">
+        <div
+          onClick={() => { setStatusFilter('all'); setPage(1); }}
+          className={`cursor-pointer bg-white rounded-lg p-4 shadow border ${
+            statusFilter === 'all' ? 'ring-2 ring-primary' : ''
+          }`}
+        >
           <p className="text-sm text-gray-600">Total Orders</p>
           <p className="text-2xl font-bold">{stats.total}</p>
         </div>
-        <div className="bg-yellow-50 rounded-lg p-4 shadow">
+        <div
+          onClick={() => { setStatusFilter('pending'); setPage(1); }}
+          className={`cursor-pointer bg-yellow-50 rounded-lg p-4 shadow border ${
+            statusFilter === 'pending' ? 'ring-2 ring-yellow-500' : ''
+          }`}
+        >
           <p className="text-sm text-yellow-700">Pending</p>
           <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
         </div>
-        <div className="bg-blue-50 rounded-lg p-4 shadow">
+        <div
+          onClick={() => { setStatusFilter('ordered'); setPage(1); }}
+          className={`cursor-pointer bg-blue-50 rounded-lg p-4 shadow border ${
+            statusFilter === 'ordered' ? 'ring-2 ring-blue-500' : ''
+          }`}
+        >
           <p className="text-sm text-blue-700">Ordered</p>
           <p className="text-2xl font-bold text-blue-600">{stats.ordered}</p>
         </div>
-        <div className="bg-green-50 rounded-lg p-4 shadow">
+        <div
+          onClick={() => { setStatusFilter('received'); setPage(1); }}
+          className={`cursor-pointer bg-green-50 rounded-lg p-4 shadow border ${
+            statusFilter === 'received' ? 'ring-2 ring-green-500' : ''
+          }`}
+        >
           <p className="text-sm text-green-700">Received</p>
           <p className="text-2xl font-bold text-green-600">{stats.received}</p>
         </div>
       </div>
 
-      {/*filter buttons based on status*/}
-      <div className="flex gap-3 mb-6">
-        <button
-          onClick={() => {setFilter('all'); setPage(1)}}
-          className={`px-4 py-2 rounded-lg font-medium ${
-            filter === 'all' ? 'bg-primary text-white' : 'bg-white text-gray-700'
-          }`}
-        >
-          All ({stats.total})
-        </button>
-        <button
-          onClick={() => {setFilter('pending'); setPage(1)}}
-          className={`px-4 py-2 rounded-lg font-medium ${
-            filter === 'pending' ? 'bg-yellow-600 text-white' : 'bg-white text-yellow-600'
-          }`}
-        >
-          Pending ({stats.pending})
-        </button>
-        <button
-          onClick={() => {setFilter('ordered'); setPage(1)}}
-          className={`px-4 py-2 rounded-lg font-medium ${
-            filter === 'ordered' ? 'bg-blue-600 text-white' : 'bg-white text-blue-600'
-          }`}
-        >
-          Ordered ({stats.ordered})
-        </button>
-        <button
-          onClick={() => {setFilter('received'); setPage(1)}}
-          className={`px-4 py-2 rounded-lg font-medium ${
-            filter === 'received' ? 'bg-green-600 text-white' : 'bg-white text-green-600'
-          }`}
-        >
-          Received ({stats.received})
-        </button>
+      <div className="bg-white rounded-lg shadow p-4 mb-6">
+        <div className="flex gap-4 flex-wrap items-end">
+          
+          <div className="flex flex-col">
+            <label className="text-xs text-gray-500 mb-1">From</label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="px-4 py-2 border rounded-lg"
+            />
+          </div>
+
+          <div className="flex flex-col">
+            <label className="text-xs text-gray-500 mb-1">To</label>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="px-4 py-2 border rounded-lg"
+            />
+          </div>
+
+          <button
+            onClick={() => {
+              setStartDate('');
+              setEndDate('');
+              setPage(1);
+            }}
+            className="px-4 py-2 bg-gray-200 rounded"
+          >
+            Clear Dates
+          </button>
+
+        </div>
       </div>
 
       {/*create order form*/}
@@ -365,7 +415,7 @@ export default function Orders() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {orders.map((order) => (
+              {getFilteredOrders().map((order) => (
                 <tr key={order.id} className="hover:bg-gray-50">
                   {/*Created Date*/}
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -492,7 +542,7 @@ export default function Orders() {
             </button>
           </div>
         </div>
-        {orders.length === 0 && (
+        {getFilteredOrders().length === 0 && (
           <div className="text-center py-8 text-gray-500">No orders match the current filter</div> //if there is nothing in the order history
         )}
       </div>
