@@ -134,7 +134,8 @@ export default function AddSales() {
   if (loading) return <p className="p-6">Loading...</p>;
 
   const subtotal = cart.reduce((sum, item) => {
-    const price = item.unit_price || 0;
+    const product = availableProducts.find(p => p.product_id === item.product_id);
+    const price = item.unit_price ?? product?.sell_price ?? 0;
     return sum + price * item.quantity;
   }, 0);
 
@@ -231,6 +232,7 @@ export default function AddSales() {
                   if (selected) {
                     setSelectedProductId(selected.product_id);
                     setProductSearch(selected.product_name);
+                    setPrice(selected.sell_price.toString()); // autofill price
                     setShowDropdown(false);
                     setHighlightIndex(-1);
                   }
@@ -253,7 +255,7 @@ export default function AddSales() {
               className="w-full px-4 py-2 border rounded-lg"
             />
 
-            {showDropdown && productSearch && (
+            {showDropdown && (
               <div className="absolute z-10 bg-white border w-full mt-1 rounded-lg shadow max-h-60 overflow-y-auto">
                 {filteredProducts.length === 0 ? (
                   <div className="p-2 text-sm text-gray-500">No products found</div>
@@ -264,6 +266,7 @@ export default function AddSales() {
                       onClick={() => {
                         setSelectedProductId(p.product_id);
                         setProductSearch(p.product_name);
+                        setPrice(p.sell_price.toString()); // autofill price
                         setShowDropdown(false);
                         setHighlightIndex(-1);
                       }}
@@ -347,7 +350,11 @@ export default function AddSales() {
                       />
                     </td>
                     <td className="px-4 py-2">
-                      ${( (item.unit_price || 0) * item.quantity ).toFixed(2)}
+                      {(() => {
+                        const product = availableProducts.find(p => p.product_id === item.product_id);
+                        const finalPrice = item.unit_price ?? product?.sell_price ?? 0;
+                        return `$${(finalPrice * item.quantity).toFixed(2)}`;
+                      })()}
                     </td>
                     <td className="px-4 py-2">
                       <button
