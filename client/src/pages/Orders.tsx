@@ -159,7 +159,7 @@ export default function Orders() {
           onClick={() => navigate('/orders/add')}
           className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary"
         >
-          + New Order
+          + New Purchase Order
         </button>
       </div>
 
@@ -169,13 +169,13 @@ export default function Orders() {
       {/*order history table*/}
       <div className="bg-white rounded-lg shadow">
         <div className="p-6 border-b">
-          <h2 className="text-lg font-semibold">Order History</h2>
+          <h2 className="text-lg font-semibold">Purchase Order History</h2>
         </div>
         {/*status*/}
         <div className="p-6 border-b space-y-6">
           <div>
             <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
-              Order Status
+              Purchase Order Status
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div
@@ -184,7 +184,7 @@ export default function Orders() {
                   statusFilter === 'all' ? 'ring-2 ring-primary' : ''
                 }`}
               >
-                <p className="text-sm text-gray-600">Total Orders</p>
+                <p className="text-sm text-gray-600">Total Purchase Orders</p>
                 <p className="text-2xl font-bold">{stats.total}</p>
               </div>
               <div

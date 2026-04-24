@@ -129,7 +129,7 @@ router.post('/', async (req, res) => {
   const t = await sequelize.transaction();
 
   try {
-    const { items, vendor_id } = req.body;
+    const { items, vendor_id, ref } = req.body;
 
     if (!vendor_id) {
       throw new Error('Vendor is required');
@@ -139,7 +139,15 @@ router.post('/', async (req, res) => {
       throw new Error('Order must contain at least one item');
     }
 
-    const order = await PurchaseOrder.create({vendorId: vendor_id}, { transaction: t });
+    const order = await PurchaseOrder.create(
+      {
+        vendorId: vendor_id,
+        ref
+      },
+      { transaction: t }
+    );
+
+    const PurchaseOrderItem = require('../models/PurchaseOrderItem');
 
     for (const item of items) {
       const product = await Product.findByPk(item.product_id, { transaction: t });
@@ -148,11 +156,16 @@ router.post('/', async (req, res) => {
         throw new Error('Product not found');
       }
 
-      await require('../models/PurchaseOrderItem').create({
+      const finalBuyPrice =
+        item.buy_price !== undefined && item.buy_price !== null
+          ? item.buy_price
+          : product.buy_price;
+
+      await PurchaseOrderItem.create({
         purchaseOrderId: order.id,
         productId: item.product_id,
         quantity: item.quantity,
-        buyPrice: product.buy_price
+        buyPrice: finalBuyPrice
       }, { transaction: t });
     }
 

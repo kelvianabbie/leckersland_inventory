@@ -98,7 +98,7 @@ export interface SalesSummary {
 export interface PurchaseOrderItem {
   product_id: number;
   quantity: number;
-  buy_price: number;
+  buy_price: number | null;
   product?: Product;
 }
 
@@ -108,15 +108,18 @@ export interface PurchaseOrder {
   ordered_date?: string;
   received_date?: string;
   created_at: string;
+  ref?: string;
   vendor?: Vendor;
   items: PurchaseOrderItem[];
 }
 
 export interface PurchaseOrderCreate {
   vendor_id: number;
+  ref?: string;
   items: {
     product_id: number;
     quantity: number;
+    buy_price?: number | null;
   }[];
 }
 
