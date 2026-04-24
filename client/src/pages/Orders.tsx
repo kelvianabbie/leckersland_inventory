@@ -3,6 +3,7 @@ import { ordersAPI, inventoryAPI, vendorsAPI } from '../utils/api';
 import { PurchaseOrder, InventoryItem, Vendor } from '../types';
 import Loading from '../components/Loading';
 import Alert from '../components/Alert';
+import { useNavigate } from 'react-router-dom';
 
 type OrderStatus = 'all' | 'pending' | 'ordered' | 'received';
 
@@ -22,15 +23,7 @@ export default function Orders() {
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [page, setPage] = useState(1);
   const limit = 20;
-  const [cart, setCart] = useState<{
-    product_id: number;
-    name: string;
-    quantity: number;
-  }[]>([]);
-  const [selectedProductId, setSelectedProductId] = useState(0);
-  const [quantity, setQuantity] = useState(1);
   const [vendors, setVendors] = useState<Vendor[]>([]);
-  const [selectedVendorId, setSelectedVendorId] = useState(0);
 
   useEffect(() => {
     loadData();
@@ -62,6 +55,8 @@ export default function Orders() {
     }
   };
 
+  const navigate = useNavigate();
+
   //function to update status of the ordered product
   const handleUpdateStatus = async (orderId: number, status: 'pending' | 'ordered' | 'received' | 'cancelled') => {
     try {
@@ -71,74 +66,6 @@ export default function Orders() {
     //  setTimeout(() => setSuccess(null), 3000); //auto-hide success message after 3 seconds
     } catch (err) {
       setError('Failed to update order status'); //error message
-    }
-  };
-
-  const handleAddToCart = () => {
-    if (!selectedProductId || quantity <= 0) return;
-
-    const product = inventory.find(i => i.product_id === selectedProductId);
-    if (!product) return;
-
-    setCart(prev => {
-      const existing = prev.find(i => i.product_id === selectedProductId);
-
-      if (existing) {
-        return prev.map(i =>
-          i.product_id === selectedProductId
-            ? { ...i, quantity: i.quantity + quantity }
-            : i
-        );
-      }
-
-      return [
-        ...prev,
-        {
-          product_id: selectedProductId,
-          name: product.product_name,
-          quantity
-        }
-      ];
-    });
-
-    setSelectedProductId(0);
-    setQuantity(1);
-  };
-
-  //create new order function
-  //new
-  const handleCreateOrder = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!selectedVendorId) {
-      setError('Vendor is required');
-      return;
-    }
-
-    if (cart.length === 0) {
-      setError('At least one product required');
-      return;
-    }
-
-    try {
-      await ordersAPI.create({
-        vendor_id: selectedVendorId,
-        items: cart.map(item => ({
-          product_id: item.product_id,
-          quantity: item.quantity
-        }))
-      });
-
-      setCart([]);
-      setSelectedVendorId(0);
-      setSelectedProductId(0);
-      setQuantity(1);
-      
-      setSuccess('Order created!');
-      await loadData();
-
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to create order');
     }
   };
 
@@ -213,9 +140,18 @@ export default function Orders() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">📋 Purchase Order</h1>
-        <p className="text-gray-600">Manage orders to suppliers</p>
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold mb-2">📋 Purchase Order</h1>
+          <p className="text-gray-600">Manage orders to suppliers</p>
+        </div>
+
+        <button
+          onClick={() => navigate('/orders/add')}
+          className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary"
+        >
+          ➕ New Order
+        </button>
       </div>
 
       {error && <Alert type="error">{error}</Alert>}
@@ -296,104 +232,6 @@ export default function Orders() {
           </button>
 
         </div>
-      </div>
-
-      {/*create order form*/}
-      <div className="bg-white rounded-lg shadow p-6 mb-8">
-        <h2 className="text-lg font-semibold mb-4">➕ Create New Purchase Order</h2>
-
-        <form onSubmit={handleCreateOrder} className="space-y-6">
-          <select
-            value={selectedVendorId}
-            onChange={e => setSelectedVendorId(parseInt(e.target.value))}
-            className="px-4 py-2 border rounded-lg w-full"
-          >
-            <option value={0}>Select vendor</option>
-            {vendors.map(v => (
-              <option key={v.id} value={v.id}>
-                {v.name}
-              </option>
-            ))}
-          </select>
-
-          {/* Add product row */}
-          <div className="grid grid-cols-3 gap-4">
-            <select
-              value={selectedProductId}
-              onChange={e => setSelectedProductId(parseInt(e.target.value))}
-              className="px-4 py-2 border rounded-lg"
-            >
-              <option value={0}>Select product</option>
-              {inventory.map(item => (
-                <option key={item.product_id} value={item.product_id}>
-                  {item.product_name} ({item.quantity} in stock)
-                </option>
-              ))}
-            </select>
-
-            <input
-              type="number"
-              min="1"
-              value={quantity}
-              onChange={e => setQuantity(parseInt(e.target.value) || 1)}
-              className="px-4 py-2 border rounded-lg"
-            />
-
-            <button
-              type="button"
-              onClick={handleAddToCart}
-              className="bg-primary text-white rounded-lg"
-            >
-              Add
-            </button>
-          </div>
-
-          {/* Cart table */}
-          {cart.length > 0 && (
-            <div className="mt-4 border rounded-lg">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-2 text-left">Product</th>
-                    <th className="px-4 py-2 text-left">Qty</th>
-                    <th className="px-4 py-2 text-left">Remove</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {cart.map(item => (
-                    <tr key={item.product_id}>
-                      <td className="px-4 py-2">{item.name}</td>
-                      <td className="px-4 py-2">{item.quantity}</td>
-                      <td className="px-4 py-2">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setCart(prev =>
-                              prev.filter(i => i.product_id !== item.product_id)
-                            )
-                          }
-                          className="text-red-600 text-xs"
-                        >
-                          Remove
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-          
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-secondary disabled:opacity-50"
-          >
-            Create Order
-          </button>
-
-        </form>
       </div>
 
       {/*order history table*/}
