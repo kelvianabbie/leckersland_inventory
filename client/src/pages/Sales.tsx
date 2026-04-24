@@ -30,6 +30,7 @@ export default function Sales() {
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<string>('');
 
   // Filter state
   const [statusFilter, setStatusFilter] = useState<SaleStatus>('all');
@@ -171,7 +172,8 @@ export default function Sales() {
       await paymentsAPI.create({
         sale_id: paymentSaleId,
         amount: paymentAmount,
-        payment_date: paymentDate || undefined
+        payment_date: paymentDate || undefined,
+        payment_method: paymentMethod || undefined
       });
 
       setSuccess('Payment recorded');
@@ -183,6 +185,7 @@ export default function Sales() {
 
       setPaymentAmount(0);
       setPaymentDate('');
+      setPaymentMethod('');
 
     } catch (err: any) {
       setPaymentError(err.response?.data?.error || 'Failed to add payment');
@@ -491,7 +494,7 @@ export default function Sales() {
               ) : (
                 paymentHistory.map((p, i) => (
                   <div key={i} className="p-2 text-sm border-b">
-                    ${p.amount} — {new Date(p.paymentDate).toLocaleString()}
+                    ${p.amount} — {new Date(p.paymentDate).toLocaleString()} — {p.paymentMethod || 'N/A'}
                   </div>
                 ))
               )}
@@ -500,20 +503,25 @@ export default function Sales() {
             {/* Add Payment */}
             <div className="flex flex-col gap-3">
               <input
+                type="text"
+                placeholder="Payment method (ex: PayPal)"
+                value={paymentMethod}
+                onChange={(e) => setPaymentMethod(e.target.value)}
+                className="border px-3 py-2 rounded"
+              />
+              <input
                 type="number"
                 placeholder="Amount"
                 value={paymentAmount}
                 onChange={(e) => setPaymentAmount(parseFloat(e.target.value) || 0)}
                 className="border px-3 py-2 rounded"
               />
-
               <input
                 type="datetime-local"
                 value={paymentDate}
                 onChange={(e) => setPaymentDate(e.target.value)}
                 className="border px-3 py-2 rounded"
               />
-
               <button
                 onClick={handleAddPayment}
                 className="bg-green-600 text-white py-2 rounded"

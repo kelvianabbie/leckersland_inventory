@@ -11,6 +11,10 @@ const Payment = sequelize.define('Payment', {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false
   },
+  paymentMethod: {
+    type: DataTypes.STRING,
+    field: 'payment_method'
+  },
   paymentDate: {
     type: DataTypes.DATE,
     field: 'payment_date',

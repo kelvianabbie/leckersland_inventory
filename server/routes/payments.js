@@ -7,7 +7,7 @@ const SaleItem = require('../models/SaleItem');
 // Add payment
 router.post('/', async (req, res) => {
   try {
-    const { sale_id, amount, payment_date } = req.body;
+    const { sale_id, amount, payment_date, payment_method } = req.body;
 
     const sale = await Sale.findByPk(sale_id);
 
@@ -46,6 +46,7 @@ router.post('/', async (req, res) => {
     const payment = await Payment.create({
       saleId: sale_id,
       amount,
+      paymentMethod: payment_method,
       paymentDate: payment_date || new Date()
     });
 

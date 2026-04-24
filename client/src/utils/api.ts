@@ -215,7 +215,7 @@ export const productsAPI = {
 };
 
 export const paymentsAPI = {
-  create: (data: { sale_id: number; amount: number; payment_date?: string }) =>
+  create: (data: { sale_id: number; amount: number; payment_date?: string; payment_method?: string; }) =>
     api.post('/payments', data),
   getBySale: (saleId: number) =>
     api.get(`/payments/${saleId}`)
