@@ -159,7 +159,7 @@ export default function Orders() {
           onClick={() => navigate('/orders/add')}
           className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary"
         >
-          ➕ New Order
+          + New Order
         </button>
       </div>
 
@@ -171,58 +171,66 @@ export default function Orders() {
         <div className="p-6 border-b">
           <h2 className="text-lg font-semibold">Order History</h2>
         </div>
-        {/*total order based on status*/}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div
-            onClick={() => { setStatusFilter('all'); setPage(1); }}
-            className={`cursor-pointer bg-white rounded-lg p-4 shadow border ${
-              statusFilter === 'all' ? 'ring-2 ring-primary' : ''
-            }`}
-          >
-            <p className="text-sm text-gray-600">Total Orders</p>
-            <p className="text-2xl font-bold">{stats.total}</p>
-          </div>
-          <div
-            onClick={() => { setStatusFilter('pending'); setPage(1); }}
-            className={`cursor-pointer bg-yellow-50 rounded-lg p-4 shadow border ${
-              statusFilter === 'pending' ? 'ring-2 ring-yellow-500' : ''
-            }`}
-          >
-            <p className="text-sm text-yellow-700">Pending</p>
-            <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
-          </div>
-          <div
-            onClick={() => { setStatusFilter('ordered'); setPage(1); }}
-            className={`cursor-pointer bg-blue-50 rounded-lg p-4 shadow border ${
-              statusFilter === 'ordered' ? 'ring-2 ring-blue-500' : ''
-            }`}
-          >
-            <p className="text-sm text-blue-700">Ordered</p>
-            <p className="text-2xl font-bold text-blue-600">{stats.ordered}</p>
-          </div>
-          <div
-            onClick={() => { setStatusFilter('received'); setPage(1); }}
-            className={`cursor-pointer bg-green-50 rounded-lg p-4 shadow border ${
-              statusFilter === 'received' ? 'ring-2 ring-green-500' : ''
-            }`}
-          >
-            <p className="text-sm text-green-700">Received</p>
-            <p className="text-2xl font-bold text-green-600">{stats.received}</p>
+        {/*status*/}
+        <div className="p-6 border-b space-y-6">
+          <div>
+            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
+              Order Status
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div
+                onClick={() => { setStatusFilter('all'); setPage(1); }}
+                className={`cursor-pointer bg-white rounded-lg p-4 shadow border ${
+                  statusFilter === 'all' ? 'ring-2 ring-primary' : ''
+                }`}
+              >
+                <p className="text-sm text-gray-600">Total Orders</p>
+                <p className="text-2xl font-bold">{stats.total}</p>
+              </div>
+              <div
+                onClick={() => { setStatusFilter('pending'); setPage(1); }}
+                className={`cursor-pointer bg-yellow-50 rounded-lg p-4 shadow border ${
+                  statusFilter === 'pending' ? 'ring-2 ring-yellow-500' : ''
+                }`}
+              >
+                <p className="text-sm text-yellow-700">Pending</p>
+                <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
+              </div>
+              <div
+                onClick={() => { setStatusFilter('ordered'); setPage(1); }}
+                className={`cursor-pointer bg-blue-50 rounded-lg p-4 shadow border ${
+                  statusFilter === 'ordered' ? 'ring-2 ring-blue-500' : ''
+                }`}
+              >
+                <p className="text-sm text-blue-700">Ordered</p>
+                <p className="text-2xl font-bold text-blue-600">{stats.ordered}</p>
+              </div>
+              <div
+                onClick={() => { setStatusFilter('received'); setPage(1); }}
+                className={`cursor-pointer bg-green-50 rounded-lg p-4 shadow border ${
+                  statusFilter === 'received' ? 'ring-2 ring-green-500' : ''
+                }`}
+              >
+                <p className="text-sm text-green-700">Received</p>
+                <p className="text-2xl font-bold text-green-600">{stats.received}</p>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Vendor Search */}
-        <div>
-          <input
-            type="text"
-            placeholder="Search by vendor..."
-            value={vendorSearch}
-            onChange={(e) => setVendorSearch(e.target.value)}
-            className="w-full px-4 py-2 rounded-lg border-2 border-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition"
-          />
-        </div>
+        <div className="p-6 border-b space-y-4">
+          {/* Search */}
+          <div>
+            <input
+              type="text"
+              placeholder="Search by vendor..."
+              value={vendorSearch}
+              onChange={(e) => setVendorSearch(e.target.value)}
+              className="w-full px-4 py-2 rounded-lg border-2 border-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition"
+            />
+          </div>
 
-        <div className="bg-white rounded-lg shadow p-4 mb-6">
+          {/* Date Filters */}
           <div className="flex gap-4 flex-wrap items-end">
             <div className="flex flex-col">
               <label className="text-xs text-gray-500 mb-1">From</label>

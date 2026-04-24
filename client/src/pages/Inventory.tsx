@@ -179,7 +179,7 @@ export default function Inventory() {
           onClick={() => window.location.href = '/inventory/add'}
           className="bg-primary text-white px-4 py-2 rounded hover:opacity-90"
         >
-          ➕ Add Product
+          {/*➕*/} + Add Product
         </button>
       </div>
       
