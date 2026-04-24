@@ -124,6 +124,12 @@ export default function AddOrder() {
 
   if (loading) return <p className="p-6">Loading...</p>;
 
+  const subtotal = cart.reduce((sum, item) => {
+    const product = inventory.find(p => p.product_id === item.product_id);
+    const price = item.buy_price ?? product?.buy_price ?? 0;
+    return sum + price * item.quantity;
+  }, 0);
+
   return (
     <div>
       <div className="mb-6">
@@ -177,7 +183,43 @@ export default function AddOrder() {
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="relative">
-                <input
+                <input onKeyDown={(e) => {
+                  if (!showDropdown) return;
+
+                  const filtered = inventory.filter(p =>
+                    p.product_name.toLowerCase().includes(productSearch.toLowerCase())
+                  );
+
+                  if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    setHighlightIndex(prev =>
+                      Math.min(prev + 1, filtered.length - 1)
+                    );
+                  }
+
+                  if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    setHighlightIndex(prev => Math.max(prev - 1, 0));
+                  }
+
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (highlightIndex >= 0) {
+                      const selected = filtered[highlightIndex];
+                      if (selected) {
+                        setSelectedProductId(selected.product_id);
+                        setProductSearch(selected.product_name);
+                        setPrice(selected.buy_price?.toString() || '');
+                        setShowDropdown(false);
+                        setHighlightIndex(-1);
+                      }
+                    }
+                  }
+
+                  if (e.key === 'Escape') {
+                    setShowDropdown(false);
+                  }
+                }}
                   type="text"
                   value={productSearch}
                   onChange={(e) => {
@@ -253,6 +295,7 @@ export default function AddOrder() {
                     <th className="px-4 py-2 text-left">Product</th>
                     <th className="px-4 py-2 text-left">Qty</th>
                     <th className="px-4 py-2 text-left">Buy Price</th>
+                    <th className="px-4 py-2 text-left">Total</th>
                     <th className="px-4 py-2 text-left">Remove</th>
                   </tr>
                 </thead>
@@ -283,6 +326,13 @@ export default function AddOrder() {
                         />
                       </td>
                       <td className="px-4 py-2">
+                        {(() => {
+                          const product = inventory.find(p => p.product_id === item.product_id);
+                          const finalPrice = item.buy_price ?? product?.buy_price ?? 0;
+                          return `$${(finalPrice * item.quantity).toFixed(2)}`;
+                        })()}
+                      </td>
+                      <td className="px-4 py-2">
                         <button
                           type="button"
                           onClick={() =>
@@ -301,6 +351,15 @@ export default function AddOrder() {
               </table>
             </div>
           )}
+
+          <div className="border-t pt-4 flex items-center gap-3">
+            <span className="text-lg font-medium text-gray-700">
+              Subtotal
+            </span>
+            <span className="text-xl font-bold text-primary">
+              ${subtotal.toFixed(2)}
+            </span>
+          </div>
 
           <button
             type="submit"
