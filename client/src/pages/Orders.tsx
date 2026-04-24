@@ -24,6 +24,7 @@ export default function Orders() {
   const [page, setPage] = useState(1);
   const limit = 20;
   const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [vendorSearch, setVendorSearch] = useState('');
 
   useEffect(() => {
     loadData();
@@ -114,6 +115,14 @@ export default function Orders() {
   const getFilteredOrders = () => {
     let filtered = [...orders];
 
+    if (vendorSearch.trim()) {
+      const term = vendorSearch.toLowerCase();
+
+      filtered = filtered.filter(order =>
+        order.vendor?.name?.toLowerCase().includes(term)
+      );
+    }
+
     const toDateOnly = (date: string | Date) => {
       const d = new Date(date);
       return new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -157,92 +166,100 @@ export default function Orders() {
       {error && <Alert type="error">{error}</Alert>}
       {success && <Alert type="success">{success}</Alert>}
 
-      {/*total order based on status*/}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div
-          onClick={() => { setStatusFilter('all'); setPage(1); }}
-          className={`cursor-pointer bg-white rounded-lg p-4 shadow border ${
-            statusFilter === 'all' ? 'ring-2 ring-primary' : ''
-          }`}
-        >
-          <p className="text-sm text-gray-600">Total Orders</p>
-          <p className="text-2xl font-bold">{stats.total}</p>
-        </div>
-        <div
-          onClick={() => { setStatusFilter('pending'); setPage(1); }}
-          className={`cursor-pointer bg-yellow-50 rounded-lg p-4 shadow border ${
-            statusFilter === 'pending' ? 'ring-2 ring-yellow-500' : ''
-          }`}
-        >
-          <p className="text-sm text-yellow-700">Pending</p>
-          <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
-        </div>
-        <div
-          onClick={() => { setStatusFilter('ordered'); setPage(1); }}
-          className={`cursor-pointer bg-blue-50 rounded-lg p-4 shadow border ${
-            statusFilter === 'ordered' ? 'ring-2 ring-blue-500' : ''
-          }`}
-        >
-          <p className="text-sm text-blue-700">Ordered</p>
-          <p className="text-2xl font-bold text-blue-600">{stats.ordered}</p>
-        </div>
-        <div
-          onClick={() => { setStatusFilter('received'); setPage(1); }}
-          className={`cursor-pointer bg-green-50 rounded-lg p-4 shadow border ${
-            statusFilter === 'received' ? 'ring-2 ring-green-500' : ''
-          }`}
-        >
-          <p className="text-sm text-green-700">Received</p>
-          <p className="text-2xl font-bold text-green-600">{stats.received}</p>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-lg shadow p-4 mb-6">
-        <div className="flex gap-4 flex-wrap items-end">
-          
-          <div className="flex flex-col">
-            <label className="text-xs text-gray-500 mb-1">From</label>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="px-4 py-2 border rounded-lg"
-            />
-          </div>
-
-          <div className="flex flex-col">
-            <label className="text-xs text-gray-500 mb-1">To</label>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="px-4 py-2 border rounded-lg"
-            />
-          </div>
-
-          <button
-            onClick={() => {
-              setStartDate('');
-              setEndDate('');
-              setPage(1);
-            }}
-            className="px-4 py-2 bg-gray-200 rounded"
-          >
-            Clear Dates
-          </button>
-
-        </div>
-      </div>
-
       {/*order history table*/}
       <div className="bg-white rounded-lg shadow">
         <div className="p-6 border-b">
           <h2 className="text-lg font-semibold">Order History</h2>
         </div>
+        {/*total order based on status*/}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div
+            onClick={() => { setStatusFilter('all'); setPage(1); }}
+            className={`cursor-pointer bg-white rounded-lg p-4 shadow border ${
+              statusFilter === 'all' ? 'ring-2 ring-primary' : ''
+            }`}
+          >
+            <p className="text-sm text-gray-600">Total Orders</p>
+            <p className="text-2xl font-bold">{stats.total}</p>
+          </div>
+          <div
+            onClick={() => { setStatusFilter('pending'); setPage(1); }}
+            className={`cursor-pointer bg-yellow-50 rounded-lg p-4 shadow border ${
+              statusFilter === 'pending' ? 'ring-2 ring-yellow-500' : ''
+            }`}
+          >
+            <p className="text-sm text-yellow-700">Pending</p>
+            <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
+          </div>
+          <div
+            onClick={() => { setStatusFilter('ordered'); setPage(1); }}
+            className={`cursor-pointer bg-blue-50 rounded-lg p-4 shadow border ${
+              statusFilter === 'ordered' ? 'ring-2 ring-blue-500' : ''
+            }`}
+          >
+            <p className="text-sm text-blue-700">Ordered</p>
+            <p className="text-2xl font-bold text-blue-600">{stats.ordered}</p>
+          </div>
+          <div
+            onClick={() => { setStatusFilter('received'); setPage(1); }}
+            className={`cursor-pointer bg-green-50 rounded-lg p-4 shadow border ${
+              statusFilter === 'received' ? 'ring-2 ring-green-500' : ''
+            }`}
+          >
+            <p className="text-sm text-green-700">Received</p>
+            <p className="text-2xl font-bold text-green-600">{stats.received}</p>
+          </div>
+        </div>
+
+        {/* Vendor Search */}
+        <div>
+          <input
+            type="text"
+            placeholder="Search by vendor..."
+            value={vendorSearch}
+            onChange={(e) => setVendorSearch(e.target.value)}
+            className="w-full px-4 py-2 rounded-lg border-2 border-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition"
+          />
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-4 mb-6">
+          <div className="flex gap-4 flex-wrap items-end">
+            <div className="flex flex-col">
+              <label className="text-xs text-gray-500 mb-1">From</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="px-4 py-2 border rounded-lg"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="text-xs text-gray-500 mb-1">To</label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="px-4 py-2 border rounded-lg"
+              />
+            </div>
+            <button
+              onClick={() => {
+                setStartDate('');
+                setEndDate('');
+                setPage(1);
+              }}
+              className="px-4 py-2 bg-gray-200 rounded"
+            >
+              Clear Dates
+            </button>
+          </div>
+        </div>
+
         <div className="overflow-x-auto">
           <table className="w-full min-w-[700px]">
             <thead className="bg-gray-50">
               <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date Created</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vendor</th>
@@ -255,6 +272,12 @@ export default function Orders() {
             <tbody className="divide-y divide-gray-200">
               {getFilteredOrders().map((order) => (
                 <tr key={order.id} className="hover:bg-gray-50">
+                  <td 
+                    className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 cursor-pointer"
+                    onClick={() => navigate(`/orders/${order.id}`)}
+                  >
+                    #{order.id}
+                  </td>
                   {/*Created Date*/}
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {formatDate(order.created_at)}

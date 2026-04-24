@@ -22,7 +22,6 @@ export default function Sales() {
   const limit = 20;
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://leckersland-inventory.onrender.com/api';
   const token = localStorage.getItem('token');
-  const [invoiceSaleId, setInvoiceSaleId] = useState<number | ''>('');
   const [paymentSaleId, setPaymentSaleId] = useState<number | null>(null);
   const [paymentAmount, setPaymentAmount] = useState<number>(0);
   const [paymentDate, setPaymentDate] = useState<string>('');
@@ -83,18 +82,6 @@ export default function Sales() {
       setError('Failed to update sale status');
     }
   };
-  
-  const handleDownloadInvoice = () => {
-    if (!invoiceSaleId) {
-      setError('Please enter a Sale ID');
-      return;
-    }
-
-    window.open(
-      `${API_BASE_URL}/invoice/${invoiceSaleId}?token=${token}`,
-      '_blank'
-    );
-  };
 
   const getFilteredSales = (): Sale[] => {
     let filtered = [...sales];
@@ -105,15 +92,10 @@ export default function Sales() {
 
     if (search.trim()) {
       const searchTerm = search.toLowerCase();
+
       filtered = filtered.filter(sale => {
         const customerName = sale.customer?.name?.toLowerCase() || '';
-        const productName = sale.items
-          ?.map(item => item.product?.name?.toLowerCase() || '')
-          .join(' ') || ''
-        return (
-          customerName.includes(searchTerm) ||
-          productName.includes(searchTerm)
-        );
+        return customerName.includes(searchTerm);
       });
     }
 
@@ -300,7 +282,7 @@ export default function Sales() {
           <div>
             <input
               type="text"
-              placeholder="Search by customer or product..."
+              placeholder="Search by customer..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full px-4 py-2 rounded-lg border-2 border-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition"
