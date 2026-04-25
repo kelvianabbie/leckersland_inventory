@@ -102,7 +102,7 @@ export default function OrderDetail() {
 
             <tbody className="divide-y">
               {(order.items || []).map(item => {
-                const price = item.buy_price || 0;
+                const price = parseFloat(String(item.buy_price ?? 0)) || 0;
                 const total = price * item.quantity;
 
                 return (

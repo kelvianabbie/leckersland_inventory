@@ -196,7 +196,7 @@ router.get('/:id', async (req, res) => {
         order.items.push({
           product_id: row.product_id,
           quantity: row.quantity,
-          buy_price: row.buy_price,
+          buy_price: parseFloat(row.buy_price) || 0,
           product: {
             name: row.product_name,
             sku: row.sku
