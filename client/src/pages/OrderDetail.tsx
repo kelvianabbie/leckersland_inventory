@@ -28,6 +28,7 @@ export default function OrderDetail() {
   };
 
   if (loading) return <Loading />;
+  if (error) return <div className="p-6 text-red-500">{error}</div>;
   if (!order) return <div className="p-6">Order not found</div>;
 
   return (
@@ -100,7 +101,7 @@ export default function OrderDetail() {
             </thead>
 
             <tbody className="divide-y">
-              {order.items?.map(item => {
+              {(order.items || []).map(item => {
                 const price = item.buy_price || 0;
                 const total = price * item.quantity;
 
