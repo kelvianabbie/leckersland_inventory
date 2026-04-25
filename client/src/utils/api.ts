@@ -221,6 +221,13 @@ export const paymentsAPI = {
     api.get(`/payments/${saleId}`)
 }
 
+export const orderPaymentsAPI = {
+  create: (data: { purchase_order_id: number; amount: number; payment_date?: string; payment_method?: string; }) => 
+    api.post('/order-payments', data),
+  getByOrder: (orderId: number) =>
+    api.get(`/order-payments/${orderId}`)
+};
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {

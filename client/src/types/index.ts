@@ -111,6 +111,8 @@ export interface PurchaseOrder {
   ref?: string;
   vendor?: Vendor;
   items: PurchaseOrderItem[];
+  total_paid?: number;
+  total_amount?: number;
 }
 
 export interface PurchaseOrderCreate {

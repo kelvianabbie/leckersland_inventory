@@ -53,7 +53,8 @@ router.get('/', async (req, res) => {
         poi.quantity,
         poi.buy_price,
         p.name as product_name,
-        p.sku
+        p.sku,
+        COALESCE(pay.total_paid, 0) as total_paid
       FROM (
         SELECT *
         FROM purchase_orders po
@@ -65,6 +66,11 @@ router.get('/', async (req, res) => {
       LEFT JOIN vendors v ON po.vendor_id = v.id
       LEFT JOIN purchase_order_items poi ON poi.purchase_order_id = po.id
       LEFT JOIN products p ON poi.product_id = p.id
+      LEFT JOIN (
+        SELECT purchase_order_id, SUM(amount) as total_paid
+        FROM order_payments
+        GROUP BY purchase_order_id
+      ) pay ON pay.purchase_order_id = po.id
       ORDER BY po.created_at DESC, po.id DESC
     `, {
       replacements,
@@ -82,6 +88,7 @@ router.get('/', async (req, res) => {
           ordered_date: row.ordered_date,
           received_date: row.received_date,
           created_at: row.created_at,
+          total_paid: parseFloat(row.total_paid || 0),
           vendor: row.vendor_id
             ? {
                 id: row.vendor_id,
@@ -102,6 +109,9 @@ router.get('/', async (req, res) => {
             sku: row.sku
           }
         });
+        orderMap[row.id].total_amount =
+          (orderMap[row.id].total_amount || 0) +
+          row.quantity * parseFloat(row.buy_price);
       }
     }
 
