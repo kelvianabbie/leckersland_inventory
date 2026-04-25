@@ -361,7 +361,6 @@ export default function Orders() {
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date Created</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total / Paid</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vendor</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ordered Date</th>
@@ -382,14 +381,6 @@ export default function Orders() {
                   {/*Created Date*/}
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {formatDate(order.created_at)}
-                  </td>
-                  {/*Product and Quantity*/}
-                  <td className="px-6 py-4 text-sm text-gray-900">
-                    {order.items.map(item => (
-                      <div key={item.product_id}>
-                        {item.product?.name} × {item.quantity}
-                      </div>
-                    ))}
                   </td>
                   <td
                     className="px-6 py-4 text-sm font-medium text-primary cursor-pointer"

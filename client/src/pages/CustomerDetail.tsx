@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { customersAPI, salesAPI } from '../utils/api';
+import { useParams, useNavigate } from 'react-router-dom';
+import { customersAPI, salesAPI, paymentsAPI } from '../utils/api';
 import { Customer, Sale } from '../types';
 import Loading from '../components/Loading';
 import Alert from '../components/Alert';
@@ -14,6 +14,10 @@ export default function CustomerDetail() {
   const [page, setPage] = useState(1);
   const [month, setMonth] = useState<number | 'all'>('all');
   const limit = 20;
+  const [paymentSaleId, setPaymentSaleId] = useState<number | null>(null);
+  const [paymentHistory, setPaymentHistory] = useState<any[]>([]);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
@@ -43,6 +47,23 @@ export default function CustomerDetail() {
     }
   };
 
+  const openPaymentModal = async (saleId: number) => {
+    try {
+      setPaymentSaleId(saleId);
+      setPaymentLoading(true);
+      setPaymentError(null);
+
+      const res = await paymentsAPI.getBySale(saleId);
+      setPaymentHistory(res.data?.data?.payments || []);
+    } catch {
+      setPaymentError('Failed to load payment history');
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+  
+  const navigate = useNavigate();
+
   if (loading) return <Loading />;
   if (!customer) return <div className="p-6">Customer not found</div>;
 
@@ -60,24 +81,19 @@ export default function CustomerDetail() {
       {/* CUSTOMER INFO CARD */}
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-lg font-semibold mb-4">Customer Information</h2>
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-
           <div>
             <p className="text-gray-500">Name</p>
             <p className="font-medium">{customer.name}</p>
           </div>
-
           <div>
             <p className="text-gray-500">Type</p>
             <p className="capitalize">{customer.type}</p>
           </div>
-
           <div>
             <p className="text-gray-500">Contact</p>
             <p>{customer.contact_info || '-'}</p>
           </div>
-
           <div>
             <p className="text-gray-500">Status</p>
             <p>
@@ -88,17 +104,14 @@ export default function CustomerDetail() {
               )}
             </p>
           </div>
-
           <div className="md:col-span-2">
             <p className="text-gray-500">Address</p>
             <p>{customer.address || '-'}</p>
           </div>
-
           <div>
             <p className="text-gray-500">Created</p>
             <p>{new Date(customer.created_at).toLocaleDateString()}</p>
           </div>
-
         </div>
       </div>
 
@@ -156,7 +169,10 @@ export default function CustomerDetail() {
                     return (
                       <tr key={sale.id} className="hover:bg-gray-50">
                         
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
+                        <td
+                          className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 cursor-pointer"
+                          onClick={() => navigate(`/sales/${sale.id}`)}
+                        >
                           #{sale.id}
                         </td>
 
@@ -172,7 +188,10 @@ export default function CustomerDetail() {
                           ))}
                         </td>
 
-                        <td className="px-6 py-4 text-sm font-medium text-primary">
+                        <td
+                          className="px-6 py-4 text-sm font-medium text-primary cursor-pointer"
+                          onClick={() => openPaymentModal(sale.id)}
+                        >
                           ${total.toFixed(2)} / ${sale.total_paid?.toFixed(2) || '0.00'}
                         </td>
 
@@ -237,6 +256,44 @@ export default function CustomerDetail() {
           )}
         </div>
       </div>
+      {paymentSaleId && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-lg">
+            
+            <h2 className="text-lg font-semibold mb-4">
+              Payments for Invoice #{paymentSaleId}
+            </h2>
+
+            {paymentError && (
+              <Alert type="error">{paymentError}</Alert>
+            )}
+
+            <div className="max-h-60 overflow-y-auto border rounded">
+              {paymentLoading ? (
+                <p className="p-3 text-sm">Loading...</p>
+              ) : paymentHistory.length === 0 ? (
+                <p className="p-3 text-sm text-gray-500">No payments yet</p>
+              ) : (
+                paymentHistory.map((p, i) => (
+                  <div key={i} className="p-2 text-sm border-b">
+                    ${p.amount} — {new Date(p.paymentDate).toLocaleString()} — {p.paymentMethod || 'N/A'}
+                  </div>
+                ))
+              )}
+            </div>
+
+            <button
+              onClick={() => {
+                setPaymentSaleId(null);
+                setPaymentError(null);
+              }}
+              className="mt-4 text-sm text-gray-500"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
