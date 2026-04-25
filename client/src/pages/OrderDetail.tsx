@@ -106,12 +106,8 @@ export default function OrderDetail() {
 
                 return (
                   <tr key={item.product_id}>
-                    <td className="px-4 py-2">
-                      {item.product?.name}
-                    </td>
-                    <td className="px-4 py-2 text-center">
-                      {item.quantity}
-                    </td>
+                    <td className="px-4 py-2">{item.product?.name}</td>
+                    <td className="px-4 py-2 text-center">{item.quantity}</td>
                     <td className="px-4 py-2 text-center">
                       ${price.toFixed(2)}
                     </td>
