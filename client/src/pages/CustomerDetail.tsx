@@ -101,11 +101,27 @@ export default function CustomerDetail() {
 
       setSuccess('Payment recorded');
 
-      // Refresh both sales + payment history
-      await loadData();
+      // Add new payment to history (optimistic update)
+      const newPayment = {
+        amount: paymentAmount,
+        paymentDate: paymentDate || new Date().toISOString(),
+        paymentMethod
+      };
 
-      const res = await paymentsAPI.getBySale(paymentSaleId);
-      setPaymentHistory(res.data?.data?.payments || []);
+      setPaymentHistory(prev => [newPayment, ...prev]);
+
+      // Update sales total_paid locally
+      setSales(prevSales =>
+        prevSales.map(s => {
+          if (s.id === paymentSaleId) {
+            return {
+              ...s,
+              total_paid: (s.total_paid || 0) + paymentAmount
+            };
+          }
+          return s;
+        })
+      );
 
       // Reset form
       setPaymentAmount(0);
