@@ -324,15 +324,15 @@ router.get('/monthly-report', async (req, res) => {
       replacements: { startDate }
     });
 
-    // EXPENSE (purchase orders)
+    // EXPENSE (actual payments made)
     const [expenseResult] = await sequelize.query(`
       SELECT 
-        COALESCE(SUM(poi.quantity * poi.buy_price), 0) as total_expense
-      FROM purchase_orders po
-      JOIN purchase_order_items poi ON poi.purchase_order_id = po.id
-      WHERE po.status IN ('ordered', 'received')
-        AND po.created_at >= DATE :startDate
-        AND po.created_at < ${endDateQuery}
+        COALESCE(SUM(op.amount), 0) as total_expense
+      FROM order_payments op
+      JOIN purchase_orders po ON op.purchase_order_id = po.id
+      WHERE po.status IN ('pending','ordered', 'received')
+        AND op.payment_date >= DATE :startDate
+        AND op.payment_date < ${endDateQuery}
     `, {
       type: sequelize.QueryTypes.SELECT,
       replacements: { startDate }
