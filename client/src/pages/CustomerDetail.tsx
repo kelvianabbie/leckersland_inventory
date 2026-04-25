@@ -18,6 +18,10 @@ export default function CustomerDetail() {
   const [paymentHistory, setPaymentHistory] = useState<any[]>([]);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [paymentAmount, setPaymentAmount] = useState<number>(0);
+  const [paymentDate, setPaymentDate] = useState<string>('');
+  const [paymentMethod, setPaymentMethod] = useState<string>('');
+  const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
@@ -57,6 +61,59 @@ export default function CustomerDetail() {
       setPaymentHistory(res.data?.data?.payments || []);
     } catch {
       setPaymentError('Failed to load payment history');
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
+  const handleAddPayment = async () => {
+    if (!paymentSaleId || paymentAmount <= 0) {
+      setPaymentError('Invalid payment');
+      return;
+    }
+
+    try {
+      setPaymentLoading(true);
+      setPaymentError(null);
+
+      const sale = sales.find(s => s.id === paymentSaleId);
+
+      if (sale) {
+        const subtotal = sale.items.reduce(
+          (sum, item) => sum + item.quantity * item.unit_price,
+          0
+        );
+
+        const total = subtotal - (sale.credit_memo || 0);
+
+        if ((sale.total_paid || 0) + paymentAmount > total) {
+          setPaymentError('Payment exceeds total sale price');
+          return;
+        }
+      }
+
+      await paymentsAPI.create({
+        sale_id: paymentSaleId,
+        amount: paymentAmount,
+        payment_date: paymentDate || undefined,
+        payment_method: paymentMethod || undefined
+      });
+
+      setSuccess('Payment recorded');
+
+      // Refresh both sales + payment history
+      await loadData();
+
+      const res = await paymentsAPI.getBySale(paymentSaleId);
+      setPaymentHistory(res.data?.data?.payments || []);
+
+      // Reset form
+      setPaymentAmount(0);
+      setPaymentDate('');
+      setPaymentMethod('');
+
+    } catch (err: any) {
+      setPaymentError(err.response?.data?.error || 'Failed to add payment');
     } finally {
       setPaymentLoading(false);
     }
@@ -268,7 +325,8 @@ export default function CustomerDetail() {
               <Alert type="error">{paymentError}</Alert>
             )}
 
-            <div className="max-h-60 overflow-y-auto border rounded">
+            {/* Payment History */}
+            <div className="max-h-40 overflow-y-auto border rounded mb-4">
               {paymentLoading ? (
                 <p className="p-3 text-sm">Loading...</p>
               ) : paymentHistory.length === 0 ? (
@@ -280,6 +338,36 @@ export default function CustomerDetail() {
                   </div>
                 ))
               )}
+            </div>
+
+            {/* Add Payment */}
+            <div className="flex flex-col gap-3">
+              <input
+                type="text"
+                placeholder="Payment method (ex: Cash, Bank Transfer)"
+                value={paymentMethod}
+                onChange={(e) => setPaymentMethod(e.target.value)}
+                className="border px-3 py-2 rounded"
+              />
+              <input
+                type="number"
+                placeholder="Amount"
+                value={paymentAmount}
+                onChange={(e) => setPaymentAmount(parseFloat(e.target.value) || 0)}
+                className="border px-3 py-2 rounded"
+              />
+              <input
+                type="datetime-local"
+                value={paymentDate}
+                onChange={(e) => setPaymentDate(e.target.value)}
+                className="border px-3 py-2 rounded"
+              />
+              <button
+                onClick={handleAddPayment}
+                className="bg-green-600 text-white py-2 rounded"
+              >
+                Add Payment
+              </button>
             </div>
 
             <button

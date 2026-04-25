@@ -531,7 +531,10 @@ export default function Sales() {
             </div>
 
             <button
-              onClick={() => {setPaymentSaleId(null); setPaymentError(null);}}
+              onClick={() => {
+                setPaymentSaleId(null); 
+                setPaymentError(null);
+              }}
               className="mt-4 text-sm text-gray-500"
             >
               Close
