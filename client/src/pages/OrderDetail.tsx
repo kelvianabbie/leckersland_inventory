@@ -100,7 +100,7 @@ export default function OrderDetail() {
             </thead>
 
             <tbody className="divide-y">
-              {order.items.map(item => {
+              {order.items?.map(item => {
                 const price = item.buy_price || 0;
                 const total = price * item.quantity;
 
