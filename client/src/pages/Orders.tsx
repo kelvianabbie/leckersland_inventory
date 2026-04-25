@@ -199,8 +199,31 @@ export default function Orders() {
 
       setSuccess('Payment recorded');
 
-      // refresh
-      await loadData();
+      // update orders locally
+      setOrders(prev =>
+        prev.map(o => {
+          if (o.id === paymentOrderId) {
+            return {
+              ...o,
+              total_paid: (o.total_paid || 0) + paymentAmount
+            };
+          }
+          return o;
+        })
+      );
+
+      // also update allOrders (for stats)
+      setAllOrders(prev =>
+        prev.map(o => {
+          if (o.id === paymentOrderId) {
+            return {
+              ...o,
+              total_paid: (o.total_paid || 0) + paymentAmount
+            };
+          }
+          return o;
+        })
+      );
 
       const res = await orderPaymentsAPI.getByOrder(paymentOrderId);
       setPaymentHistory(res.data?.data?.payments || []);
@@ -495,7 +518,7 @@ export default function Orders() {
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-lg">
             <h2 className="text-lg font-semibold mb-4">
-              Payments for Order #{paymentOrderId}
+              Payments for Purchase Order #{paymentOrderId}
             </h2>
             {paymentError && <Alert type="error">{paymentError}</Alert>}
             {/* Payment History */}
@@ -516,7 +539,7 @@ export default function Orders() {
             <div className="flex flex-col gap-3">
               <input
                 type="text"
-                placeholder="Payment method (ex: Bank Transfer)"
+                placeholder="Payment method (ex: PayPal)"
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value)}
                 className="border px-3 py-2 rounded"

@@ -478,7 +478,7 @@ export default function Sales() {
           <div className="bg-white rounded-lg p-6 w-full max-w-lg">
             
             <h2 className="text-lg font-semibold mb-4">
-              Payments for Sale #{paymentSaleId}
+              Payments for Invoice #{paymentSaleId}
             </h2>
 
             {paymentError && (
