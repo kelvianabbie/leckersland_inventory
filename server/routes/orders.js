@@ -134,6 +134,90 @@ router.get('/', async (req, res) => {
   }
 });
 
+// get single purchase order by id
+router.get('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const rows = await sequelize.query(`
+      SELECT 
+        po.id,
+        po.status,
+        po.ordered_date,
+        po.received_date,
+        po.created_at,
+        po.vendor_id,
+        v.name as vendor_name,
+        poi.product_id,
+        poi.quantity,
+        poi.buy_price,
+        p.name as product_name,
+        p.sku,
+        COALESCE(pay.total_paid, 0) as total_paid
+      FROM purchase_orders po
+      LEFT JOIN vendors v ON po.vendor_id = v.id
+      LEFT JOIN purchase_order_items poi ON poi.purchase_order_id = po.id
+      LEFT JOIN products p ON poi.product_id = p.id
+      LEFT JOIN (
+        SELECT purchase_order_id, SUM(amount) as total_paid
+        FROM order_payments
+        GROUP BY purchase_order_id
+      ) pay ON pay.purchase_order_id = po.id
+      WHERE po.id = :id
+    `, {
+      replacements: { id },
+      type: sequelize.QueryTypes.SELECT
+    });
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    // transform → same pattern as list
+    const order = {
+      id: rows[0].id,
+      status: rows[0].status,
+      ordered_date: rows[0].ordered_date,
+      received_date: rows[0].received_date,
+      created_at: rows[0].created_at,
+      total_paid: parseFloat(rows[0].total_paid || 0),
+      vendor: rows[0].vendor_id
+        ? {
+            id: rows[0].vendor_id,
+            name: rows[0].vendor_name
+          }
+        : null,
+      items: [],
+      total_amount: 0
+    };
+
+    for (const row of rows) {
+      if (row.product_id) {
+        order.items.push({
+          product_id: row.product_id,
+          quantity: row.quantity,
+          buy_price: row.buy_price,
+          product: {
+            name: row.product_name,
+            sku: row.sku
+          }
+        });
+
+        order.total_amount += row.quantity * parseFloat(row.buy_price);
+      }
+    }
+
+    res.json({
+      success: true,
+      data: { order }
+    });
+
+  } catch (error) {
+    console.error('Order detail error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 //create new purchase order
 router.post('/', async (req, res) => {
   const t = await sequelize.transaction();
