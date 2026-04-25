@@ -204,6 +204,10 @@ export const ordersAPI = {
     const response = await api.delete(`/orders/${id}`);
     return response.data;
   },
+  getById: async (id: number): Promise<ApiResponse<{ order: PurchaseOrder }>> => {
+    const response = await api.get(`/orders/${id}`);
+    return response.data;
+  },
 };
 
 export const productsAPI = {
